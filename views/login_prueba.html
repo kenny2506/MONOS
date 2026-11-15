@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Multi-Store Responsivo Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+/* --- ESTILOS GENERALES Y RESET --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #06060b;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Padding flexible para que el wrap no toque los bordes en mobile */
+  padding: clamp(10px, 3vw, 20px); 
+  position: relative;
+  overflow-x: hidden;
+  color: #f1f5f9;
+}
+
+/* Fondo de partículas */
+#particles-js {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #06060b;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  transition: background 0.8s ease;
+}
+
+/* --- CONTENEDOR PRINCIPAL (GRID) RESPONSIVO --- */
+.wrap {
+  display: grid;
+  /* Definición de columnas responsive: por defecto 1 columna (mobile) */
+  grid-template-columns: 1fr; 
+  width: 100%;
+  max-width: 1100px;
+  min-height: auto; /* Auto en mobile para que crezca con contenido */
+  border-radius: 32px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  box-shadow: 0 50px 100px -30px rgba(0,0,0,0.85);
+  background: #0b0b14;
+  position: relative;
+  z-index: 2;
+  transition: min-height 0.3s ease;
+}
+
+/* Media query para pantallas grandes (Desktop/Tablet landscape) */
+@media (min-width: 769px) {
+  .wrap {
+    /* Volvemos a las 2 columnas con la proporción original */
+    grid-template-columns: 1.1fr 0.9fr; 
+    min-height: 620px; /* Altura fija para el efecto wave */
+  }
+}
+
+/* --- PANEL IZQUIERDO: MURO DE MARCA --- */
+.left {
+  background: linear-gradient(135deg, #3b3abe 0%, #5c5be5 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Clip-path adaptable: por defecto casi recto (mobile) */
+  clip-path: polygon(0% 0%, 100% 0%, 100% 90%, 95% 100%, 0% 100%); 
+  transition: clip-path 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.8s ease, min-height 0.3s ease;
+  z-index: 3;
+  /* Altura mínima en mobile para que se luzca el logo apilado */
+  min-height: clamp(200px, 30vh, 300px); 
+}
+
+/* Clip-path orgánico solo en pantallas grandes */
+@media (min-width: 769px) {
+  .left {
+    clip-path: polygon(0% 0%, 100% 0%, 88% 30%, 96% 65%, 85% 100%, 0% 100%);
+    min-height: 100%;
+  }
+}
+
+.left.vinilos { 
+  background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%); 
+  /* Clip-path mobile RedKat (casi recto) */
+  clip-path: polygon(0% 0%, 100% 0%, 100% 90%, 95% 100%, 0% 100%);
+}
+
+/* Clip-path orgánico RedKat en pantallas grandes */
+@media (min-width: 769px) {
+  .left.vinilos {
+    clip-path: polygon(0% 0%, 94% 0%, 82% 38%, 98% 74%, 90% 100%, 0% 100%);
+  }
+}
+
+.left-inner {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between;
+  /* Padding adaptable */
+  padding: clamp(15px, 4vw, 32px); 
+  position: relative; z-index: 4;
+}
+
+/* Badge y Footer superpuestos */
+.store-badge {
+  display: flex; align-items: center; gap: clamp(5px, 1.5vw, 10px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 100px;
+  padding: 5px clamp(8px, 2vw, 14px) 5px 6px;
+  align-self: flex-start;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
+}
+.badge-dot {
+  width: clamp(20px, 5vw, 26px); height: clamp(20px, 5vw, 26px);
+  background: white; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(8px, 1.5vw, 10px); font-weight: 800;
+  color: #4f4ec4;
+  flex-shrink: 0; transition: all 0.5s ease;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.badge-dot.vinilos { color: #dc2626; transform: rotate(360deg); }
+.badge-name { font-size: clamp(10px, 2vw, 12px); font-weight: 600; color: #ffffff; }
+
+/* EL LOGO MASIVO RESPONSIVO */
+.logo-big {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1500px;
+  z-index: 5;
+  /* Aseguramos que el logo no empuje el contenido en mobile */
+  pointer-events: none; 
+}
+.logo-circle {
+  width: 90%; /* Más ancho en mobile */
+  height: 90%;
+  max-width: 500px;
+  max-height: 500px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto; /* Reactivamos puntero para el hover */
+}
+/* Menor tamaño relativo en escritorio para balancear */
+@media (min-width: 769px) {
+  .logo-circle { width: 80%; height: 80%; }
+}
+
+.left.vinilos .logo-circle { transform: rotateY(180deg) scale(0.95); }
+
+.logo-letter {
+  font-family: 'Space Grotesk', sans-serif;
+  /* TAMAÑO MASIVO USANDO CLAMP PARA RESPONSIVIDAD */
+  font-size: clamp(60px, 15vw, 300px); 
+  font-weight: 700; color: white; line-height: 1;
+  letter-spacing: clamp(-2px, -0.5vw, -5px); user-select: none;
+  text-shadow: 
+    0 10px 20px rgba(0,0,0,0.3),
+    0 -5px 10px rgba(255,255,255,0.1),
+    inset 0 2px 4px rgba(255,255,255,0.2);
+  transition: all 0.8s ease;
+}
+.left.vinilos .logo-letter { transform: rotateY(-180deg); }
+.logo-letter.rk { 
+  font-size: clamp(40px, 10vw, 220px); 
+}
+
+.left-footer { 
+  font-size: clamp(8px, 1.5vw, 10px); color: rgba(255,255,255,0.4); 
+  font-weight: 500; letter-spacing: 0.08em; 
+  text-transform: uppercase; align-self: flex-start; 
+  z-index: 10;
+}
+
+/* --- PANEL DERECHO (Formulario) --- */
+.right {
+  background: #0b0b14;
+  /* Padding adaptable */
+  padding: clamp(20px, 5vw, 48px); 
+  display: flex; flex-direction: column; justify-content: center;
+  transition: background 0.8s ease;
+  z-index: 2;
+}
+.right.vinilos { background: #110707; }
+
+.store-switcher { 
+  display: inline-flex; 
+  background: rgba(255,255,255,0.03); 
+  padding: 4px; border-radius: 12px; margin-bottom: clamp(20px, 4vw, 36px);
+  align-self: flex-start;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.sw-btn {
+  font-size: clamp(9px, 1.5vw, 11px); font-weight: 600; padding: 6px clamp(10px, 2vw, 16px);
+  border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+  background: transparent; color: rgba(255,255,255,0.4);
+  transition: all 0.3s ease; font-family: inherit;
+}
+.sw-btn.active-m { background: #1e1e38; border-color: rgba(99,102,241,0.25); color: #a5b4fc; }
+.sw-btn.active-r { background: #281515; border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+
+.login-title { font-size: clamp(20px, 4vw, 28px); font-weight: 700; color: #ffffff; margin-bottom: 6px; }
+.login-sub { font-size: clamp(11px, 2vw, 13px); color: rgba(255,255,255,0.35); margin-bottom: clamp(20px, 4vw, 32px); }
+
+/* Inputs */
+.field { margin-bottom: clamp(15px, 3vw, 20px); }
+.field label { display: block; font-size: clamp(8px, 1.5vw, 10px); font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+.field input {
+  width: 100%; padding: clamp(10px, 2.5vw, 13px) 16px;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  color: #f1f5f9; font-size: clamp(12px, 2vw, 14px); font-family: inherit; outline: none; transition: all 0.3s ease;
+}
+
+/* Botón Submit */
+.btn-submit {
+  width: 100%; padding: 14px; border-radius: 12px;
+  background: #4f4ec4; color: white; font-weight: 600; border: none;
+  cursor: pointer; font-size: 14px; font-family: inherit; margin-top: 8px;
+  transition: all 0.4s ease;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-submit.vinilos { background: #dc2626; }
+
+.bottom-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 10px; }
+.link-txt { font-size: 12px; color: rgba(255,255,255,0.3); cursor: pointer; transition: color 0.2s; }
+.accent-link { color: #818cf8; font-weight: 600; }
+.accent-link.vinilos { color: #f87171; }
+
+.footer-note { font-size: 11px; color: rgba(255,255,255,0.15); margin-top: 28px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 16px; text-align: center;}
+</style>
+</head>
+<body>
+
+<div id="particles-js"></div>
+
+<div class="wrap">
+  <div class="left" id="leftPane">
+    <div class="logo-big">
+      <div class="logo-circle" id="logoCircle">
+        <span class="logo-letter" id="logoLetter">M</span>
+      </div>
+    </div>
+    
+    <div class="left-inner">
+      <div class="store-badge">
+        <div class="badge-dot" id="badgeDot">M</div>
+        <span class="badge-name" id="badgeName">Ventas Monos</span>
+      </div>
+      <div class="left-footer">© 2026 Monos Inc</div>
+    </div>
+  </div>
+
+  <div class="right" id="rightPane">
+    <div class="store-switcher">
+      <button class="sw-btn active-m" id="btnMonos" onclick="setStore('monos')">Monos</button>
+      <button class="sw-btn" id="btnVinilos" onclick="setStore('vinilos')">RedKat</button>
+    </div>
+    <div class="login-title">Bienvenido</div>
+    <div class="login-sub" id="loginSub">Panel Administrativo · Ventas Monos</div>
+    
+    <div class="field">
+      <label>Usuario</label>
+      <input type="text" placeholder="Tu usuario" id="inp1" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" placeholder="••••••••" id="inp2" autocomplete="current-password">
+    </div>
+    
+    <button class="btn-submit" id="submitBtn">Iniciar sesión <span style="font-size:16px; margin-left:4px;">→</span></button>
+    
+    <div class="bottom-row">
+      <span class="link-txt">¿Olvidaste tu contraseña?</span>
+      <span class="link-txt accent-link" id="accentLink">Registrarse</span>
+    </div>
+    <div class="footer-note">© 2026 Monos Inc · Términos y servicios</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+// Manteniendo la lógica exacta de control de foco
+function setInputAccent(c, bg) {
+  ['inp1','inp2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.onfocus = () => { el.style.borderColor = c; el.style.background = bg; el.style.boxShadow = `0 0 0 4px ${c}15`; };
+    el.onblur = () => { el.style.borderColor = ''; el.style.background = ''; el.style.boxShadow = ''; };
+  });
+}
+
+function setStore(s) {
+  const isV = s === 'vinilos';
+
+  // CSS maneja la animación de la onda mobile vs desktop automáticamente vía media queries
+  document.getElementById('leftPane').className = 'left' + (isV ? ' vinilos' : '');
+  document.getElementById('rightPane').className = 'right' + (isV ? ' vinilos' : '');
+  document.getElementById('submitBtn').className = 'btn-submit' + (isV ? ' vinilos' : '');
+  document.getElementById('accentLink').className = 'link-txt accent-link' + (isV ? ' vinilos' : '');
+
+  document.getElementById('btnMonos').className = 'sw-btn' + (!isV ? ' active-m' : '');
+  document.getElementById('btnVinilos').className = 'sw-btn' + (isV ? ' active-r' : '');
+
+  const dot = document.getElementById('badgeDot');
+  const letter = document.getElementById('logoLetter');
+
+  dot.className = 'badge-dot' + (isV ? ' vinilos' : '');
+
+  // Animación del Fondo de Partículas Adaptable
+  const particleColor = isV ? '#dc2626' : '#a5b4fc';
+  if (window.pJSDom && window.pJSDom[0]) {
+    window.pJSDom[0].pJS.particles.color.value = particleColor;
+    window.pJSDom[0].pJS.particles.line_linked.color = particleColor;
+    window.pJSDom[0].pJS.fn.particlesRefresh();
+  }
+
+  // Cambio de Textos con retraso para la metamorfosis
+  if (isV) {
+    dot.textContent = 'RK';
+    document.getElementById('badgeName').textContent = 'Ventas RedKat';
+    document.getElementById('loginSub').textContent = 'Panel Administrativo · Ventas RedKat';
+    setTimeout(() => {
+        letter.textContent = 'RK';
+        letter.className = 'logo-letter rk';
+    }, 200);
+    setInputAccent('#dc2626', 'rgba(220,38,38,0.02)');
+  } else {
+    dot.textContent = 'M';
+    document.getElementById('badgeName').textContent = 'Ventas Monos';
+    document.getElementById('loginSub').textContent = 'Panel Administrativo · Ventas Monos';
+    setTimeout(() => {
+        letter.textContent = 'M';
+        letter.className = 'logo-letter';
+    }, 200);
+    setInputAccent('#4f4ec4', 'rgba(79,78,196,0.02)');
+  }
+}
+
+// Inicialización de acentos
+setInputAccent('#4f4ec4', 'rgba(79,78,196,0.02)');
+
+// Inicialización de particles.js Sutil
+particlesJS("particles-js", {
+  "particles": {
+    "number": { "value": 60, "density": { "enable": true, "value_area": 800 } },
+    "color": { "value": "#a5b4fc" },
+    "shape": { "type": "circle" },
+    "opacity": { "value": 0.2, "random": true },
+    "size": { "value": 2, "random": true },
+    "line_linked": { "enable": true, "distance": 150, "color": "#a5b4fc", "opacity": 0.1, "width": 1 },
+    "move": { "enable": true, "speed": 1, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
+  },
+  "interactivity": {
+    "detect_on": "canvas",
+    "events": { "onhover": { "enable": true, "mode": "grab" } },
+    "mode": { "grab": { "distance": 140, "line_linked": { "opacity": 0.3 } } }
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bannerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="accentGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="320" rx="20" fill="url(#bannerBg)" />
+  
+  <!-- Decorative Circles -->
+  <circle cx="100" cy="50" r="180" fill="#38bdf8" opacity="0.05" />
+  <circle cx="1100" cy="270" r="160" fill="#818cf8" opacity="0.08" />
+  
+  <!-- Accent Line -->
+  <rect x="0" y="310" width="1200" height="10" fill="url(#accentGlow)" />
+
+  <!-- Text Content -->
+  <text x="600" y="110" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="42" fill="#ffffff" text-anchor="middle" letter-spacing="3">
+    MONOS INCORPORATED
+  </text>
+  
+  <text x="600" y="165" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="22" fill="#94a3b8" text-anchor="middle" letter-spacing="1">
+    Descubre nuestras colecciones y novedades exclusivas
+  </text>
+
+  <!-- CTA Button Mockup -->
+  <g transform="translate(450, 205)">
+    <rect width="300" height="54" rx="27" fill="url(#accentGlow)" />
+    <text x="150" y="34" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="18" fill="#ffffff" text-anchor="middle" letter-spacing="1">
+      VISITAR TIENDA OFICIAL
+    </text>
+  </g>
+</svg>

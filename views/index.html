@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas Monos</title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <div id="toast-container"></div>
+    <div id="imgModal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
+
+    <div class="container-max">
+        <!-- DRAWER OVERLAY -->
+        <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+
+        <!-- DRAWER DERECHO -->
+        <nav id="mainDrawer" class="main-drawer">
+            <div class="drawer-header">
+                <div class="brand">
+                    <div class="logo-space"><img src="/Logo.png" alt="Logo" id="drawerLogo"></div>
+                    <div>
+                        <div style="font-weight:800; font-size:1rem;" id="drawerTitle">Monos Inc</div>
+                        <div class="record-badge" style="margin-top:4px; display:inline-flex;"><span
+                                id="countTop">0</span>&nbsp;Pedidos</div>
+                    </div>
+                </div>
+                <button class="drawer-close" onclick="closeDrawer()" aria-label="Cerrar menú">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="drawer-nav-links">
+                <button class="drawer-link active" id="tab-ventas" onclick="switchTab('ventas'); closeDrawer()">
+                    <span class="drawer-link-icon"><i data-lucide="shopping-bag"></i></span>
+                    <span>Gestión</span>
+                </button>
+                <button class="drawer-link" id="tab-whatsapp" onclick="switchTab('whatsapp'); closeDrawer()">
+                    <span class="drawer-link-icon"><i data-lucide="message-square"></i></span>
+                    <span>WhatsApp</span>
+                </button>
+                <button class="drawer-link" id="tab-egresos" onclick="switchTab('egresos'); closeDrawer()">
+                    <span class="drawer-link-icon"><i data-lucide="arrow-down-left"></i></span>
+                    <span>Egresos</span>
+                </button>
+                <button class="drawer-link" id="tab-stats" onclick="switchTab('stats'); closeDrawer()">
+                    <span class="drawer-link-icon"><i data-lucide="bar-chart-3"></i></span>
+                    <span>Reportes</span>
+                </button>
+                <button class="drawer-link" id="tab-clientes" onclick="switchTab('clientes'); closeDrawer()">
+                    <span class="drawer-link-icon"><i data-lucide="users"></i></span>
+                    <span>Clientes</span>
+                </button>
+                <button class="drawer-link" id="tab-calendario" onclick="switchTab('calendario'); closeDrawer()">
+                    <span class="drawer-link-icon"><i data-lucide="calendar"></i></span>
+                    <span>Calendario</span>
+                </button>
+            </div>
+
+            <div class="drawer-footer">
+                <button id="themeBtn" class="drawer-theme-btn">
+                    <i data-lucide="moon"></i> Cambiar Tema
+                </button>
+                <a href="/logout" class="drawer-logout-btn">
+                    <i data-lucide="log-out"></i> Cerrar Sesión
+                </a>
+            </div>
+        </nav>
+
+        <!-- HEADER COMPACTO -->
+        <header class="main-header">
+            <div class="header-left">
+                <!-- BOTÓN MENÚ DESPLEGABLE: Solo en versión móvil y a mano izquierda -->
+                <button class="hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" aria-label="Abrir menú">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="brand">
+                    <div class="logo-space"><img src="/Logo.png" alt="Logo" id="headerLogo"></div>
+                    <div>
+                        <h1 style="margin:0; font-size: 1.1rem; font-weight:800;" id="headerTitle">Cargando...</h1>
+                        <div class="active-tab-label" id="activeTabLabel">Gestión</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAVEGACIÓN ESCRITORIO: Botones a los menús visibles sin ocultar -->
+            <nav class="desktop-nav-links" id="desktopNavLinks" aria-label="Menú principal">
+                <button class="desktop-nav-link active" id="desk-tab-ventas" data-tab="ventas" onclick="switchTab('ventas')">
+                    <i data-lucide="shopping-bag"></i>
+                    <span>Gestión</span>
+                </button>
+                <button class="desktop-nav-link" id="desk-tab-whatsapp" data-tab="whatsapp" onclick="switchTab('whatsapp')">
+                    <i data-lucide="message-square"></i>
+                    <span>WhatsApp</span>
+                </button>
+                <button class="desktop-nav-link" id="desk-tab-egresos" data-tab="egresos" onclick="switchTab('egresos')">
+                    <i data-lucide="arrow-down-left"></i>
+                    <span>Egresos</span>
+                </button>
+                <button class="desktop-nav-link" id="desk-tab-stats" data-tab="stats" onclick="switchTab('stats')">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Reportes</span>
+                </button>
+                <button class="desktop-nav-link" id="desk-tab-clientes" data-tab="clientes" onclick="switchTab('clientes')">
+                    <i data-lucide="users"></i>
+                    <span>Clientes</span>
+                </button>
+                <button class="desktop-nav-link" id="desk-tab-calendario" data-tab="calendario" onclick="switchTab('calendario')">
+                    <i data-lucide="calendar"></i>
+                    <span>Calendario</span>
+                </button>
+            </nav>
+
+            <div class="header-actions">
+                <div class="header-orders-badge" id="headerOrdersBadge" title="Total de pedidos">
+                    <i data-lucide="shopping-bag" style="width:13px;height:13px;"></i>
+                    <span id="countTopHeader">0</span>
+                </div>
+                <button class="fab-new-sale" id="btnOpenVentaModal" onclick="openVentaModal()" title="Registrar Venta">
+                    <i data-lucide="plus"></i>
+                </button>
+                <button id="themeBtnDesktop" class="desktop-theme-btn" title="Cambiar Tema">
+                    <i data-lucide="moon"></i>
+                </button>
+                <a href="/logout" class="desktop-logout-btn" title="Cerrar Sesión">
+                    <i data-lucide="log-out"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- GESTIÓN -->
+        <section id="view-ventas" class="view active dashboard-grid">
+            <aside style="display:none;"></aside>
+            <main>
+                <div id="redemptionAlertBanner" style="display:none;"></div>
+                <div class="stats-row"
+                    style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:20px;">
+                    <div class="glass-card" style="text-align:center; padding:15px;"><span
+                            style="font-size:9px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">
+                            Top Producto</span><br><span id="topP" style="font-size:16px; font-weight:800;">-</span>
+                    </div>
+                    <div class="glass-card" style="text-align:center; padding:15px;"><span
+                            style="font-size:9px; text-transform:uppercase; color:var(--text-muted); font-weight:700;"
+                            id="statTallaLabel">
+                            Top Talla</span><br><span id="topT" style="font-size:16px; font-weight:800;">-</span></div>
+                    <div class="glass-card" style="text-align:center; padding:15px;"><span
+                            style="font-size:9px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">
+                            Top Ciudad</span><br><span id="topC" style="font-size:16px; font-weight:800;">-</span></div>
+                </div>
+                <div class="glass-card">
+                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; flex-wrap: wrap;">
+                        <input type="text" id="search"
+                            placeholder="Buscar por prenda, cliente, plataforma, estado, celular o cualquier dato..."
+                            style="flex:1; min-width: 250px;" onkeyup="refrescar()">
+                        <button id="btnSincronizarVentas" class="btn btn-outline"
+                            style="border-color:#34a853; color:#34a853; width:auto; white-space:nowrap; padding: 8px 14px; font-size: 11px; margin-top:0;"
+                            onclick="sincronizarGoogleForms(event)" oncontextmenu="sincronizarGoogleForms(event)"><i
+                                data-lucide="refresh-cw"></i> Sincronizar
+                            ventas</button>
+                        <button id="btnEliminarSel" class="btn btn-outline"
+                            style="border-color:#ef4444; color:#ef4444; width:auto; white-space:nowrap; padding: 8px 14px; font-size: 11px; margin-top:0; display:none;"
+                            onclick="eliminarSeleccionados()"><i data-lucide="trash-2"></i> Eliminar
+                            seleccionados</button>
+                        <button id="btnGenerarGuia" class="btn btn-outline"
+                            style="border-color:#16a34a; color:#4ade80; width:auto; white-space:nowrap; padding: 8px 14px; font-size: 11px; margin-top:0; display:none;"
+                            onclick="abrirModalGuia()"><i data-lucide="tag"></i> Generar guía</button>
+                        <button id="btnEnviarProveedor" class="btn btn-primary"
+                            style="width:auto; white-space:nowrap; padding: 8px 14px; font-size: 11px; margin-top:0; display:none;"
+                            onclick="enviarProveedor(event)" oncontextmenu="enviarProveedor(event)"><i
+                                data-lucide="package"></i> Enviar a proveedor</button>
+                    </div>
+                    <div class="table-window">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Sel.</th>
+                                    <th>Img</th>
+                                    <th>Prenda</th>
+                                    <th>Cliente / Info</th>
+                                    <th>Utilidad</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- EGRESOS -->
+        <section id="view-egresos" class="view dashboard-grid">
+            <aside>
+                <div class="glass-card">
+                    <h3 style="margin:0 0 15px 0; font-size:1rem;">Registrar Egreso</h3>
+                    <form id="egresoForm">
+                        <div class="form-group"><label>Categoría</label><select id="egresoCat" required>
+                                <option value="Materia Prima">Materia Prima</option>
+                                <option value="Empaque">Empaque</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Publicidad">Publicidad</option>
+                                <option value="Página Web">Página Web</option>
+                                <option value="Plan Móvil">Plan Móvil</option>
+                                <option value="Otros">Otros</option>
+                            </select></div>
+                        <div class="form-group"><label>Monto</label><input type="number" id="egresoMonto" required>
+                        </div>
+                        <div class="form-group"><label>Fecha</label><input type="date" id="egresoFecha" required></div>
+                        <div class="form-group"><label>Descripción</label><textarea id="egresoDesc"></textarea><button
+                                type="submit" class="btn btn-danger" style="margin-top:15px;">Guardar Gasto</button>
+                    </form>
+                </div>
+            </aside>
+            <main>
+                <div class="glass-card">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                        <h3 style="margin:0; font-size:1rem;">Historial de Gastos</h3>
+                        <div
+                            style="background:rgba(239, 68, 68, 0.12); border:1px solid rgba(239, 68, 68, 0.3); border-radius:10px; padding:6px 14px; font-weight:800; color:#ef4444; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+                            <i data-lucide="arrow-down-left" class="lucide-sm"></i> Total Egresos: <span
+                                id="totalEgresosBadge" style="font-size:14px;">$0</span>
+                        </div>
+                    </div>
+                    <div class="table-window">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Categoría</th>
+                                    <th>Descripción</th>
+                                    <th>Monto</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyEgresos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- REPORTES -->
+        <section id="view-stats" class="view">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap:24px;">
+                <div class="glass-card">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                        <h3 style="margin:0; font-size:0.9rem; text-transform:uppercase; color:var(--text-muted)">
+                            Rendimiento</h3>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <select id="rendimientoMetricFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                                onchange="renderTemporalStats()">
+                                <option value="ventas">Ventas</option>
+                                <option value="utilidad">Utilidad</option>
+                            </select>
+                            <select id="mesFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                                onchange="renderTemporalStats()">
+                                <option value="">Mes Actual</option>
+                                <option value="0">Enero</option>
+                                <option value="1">Febrero</option>
+                                <option value="2">Marzo</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Mayo</option>
+                                <option value="5">Junio</option>
+                                <option value="6">Julio</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Septiembre</option>
+                                <option value="9">Octubre</option>
+                                <option value="10">Noviembre</option>
+                                <option value="11">Diciembre</option>
+                            </select>
+                            <select id="anoFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                                onchange="renderTemporalStats()">
+                                <option value="">Todos los Años</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div
+                        style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:20px; text-align:center;">
+                        <div id="semDiv">7 DÍAS<br><span id="sSemV" style="font-weight:800;">$0</span></div>
+                        <div id="mesDiv">MES<br><span id="sMesV" style="font-weight:800;">$0</span></div>
+                        <div id="totDiv">TOTAL<br><span id="sTotalV" style="font-weight:800;">$0</span></div>
+                    </div>
+                    <div style="height:280px;"><canvas id="generalChart"></canvas></div>
+                </div>
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 style="margin:0; font-size:0.9rem; text-transform:uppercase; color:var(--text-muted)"
+                            id="geoTitle">
+                            Ciudades</h3>
+                        <select id="geoFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                            onchange="renderTemporalStats()">
+                            <option value="ciudad">Por Ciudad</option>
+                            <option value="pais">Por País</option>
+                        </select>
+                    </div>
+                    <div style="height:320px;"><canvas id="cityChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- RENDIMIENTO Y EGRESOS MES A MES -->
+            <div class="glass-card" style="margin-top:24px;">
+                <div
+                    style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <h3 style="margin:0; font-size:1rem; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="line-chart"></i> Rendimiento y Egresos Mes a Mes
+                    </h3>
+                    <span id="badgeTotalEgresosReporte" class="record-badge"
+                        style="background:var(--danger); font-size:11px;">Total Gastado: $0</span>
+                </div>
+                <div style="height:280px; margin-bottom: 20px;"><canvas id="monthlyEgresosChart"></canvas></div>
+                <div class="table-window" style="max-height: 280px; height: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mes</th>
+                                <th>Ventas Brutas</th>
+                                <th>Egresos Gastados</th>
+                                <th>Ventas Netas</th>
+                                <th>Utilidad Neta</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyMonthlyRendimiento">
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                        <tfoot id="tfootMonthlyRendimiento" style="font-weight:800; background:var(--bg);">
+                            <!-- Totales acumulados -->
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="glass-card" style="margin-top:24px;">
+                <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:1rem;">Análisis por Prenda</h3><select id="prendaFilter"
+                        style="width:250px;" onchange="renderTemporalStats()"></select>
+                </div>
+                <div style="height:280px;"><canvas id="productChart"></canvas></div>
+            </div>
+            <div class="glass-card" style="margin-top:24px;">
+                <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:1rem;">Análisis por Plataforma</h3><select id="plataformaFilter"
+                        style="width:250px;" onchange="renderTemporalStats()">
+                        <option value="">Todas</option>
+                        <option value="Whatsapp">Whatsapp</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Tiktok">Tiktok</option>
+                        <option value="Página Web">Página Web</option>
+                    </select>
+                </div>
+                <div style="height:280px;"><canvas id="plataformaChart"></canvas></div>
+            </div>
+        </section>
+
+        <!-- CLIENTES -->
+        <section id="view-clientes" class="view">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                <h3 style="margin:0; display:flex; align-items:center; gap:8px;"><i data-lucide="award"
+                        style="color:var(--primary);"></i> Ranking de Lealtad (Mejores Clientes)</h3>
+                <div style="position:relative; width:300px; max-width:100%;">
+                    <input type="text" id="clientSearch" placeholder="Buscar por nombre, ciudad o teléfono..."
+                        oninput="renderLealtad()"
+                        style="width:100%; padding:10px 14px 10px 38px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text-main); font-size:0.85rem; outline:none; transition:border 0.3s;">
+                    <span
+                        style="position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:0.5; display:flex;"><i
+                            data-lucide="search" class="lucide-sm"></i></span>
+                </div>
+            </div>
+            <div id="loyaltyList" class="loyalty-grid"></div>
+        </section>
+
+        <!-- VISTA CALENDARIO -->
+        <section id="view-calendario" class="view">
+            <div class="dashboard-header"
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+                <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+                    <button class="btn btn-outline" onclick="changeMonth(-1)"
+                        style="width:auto; padding:5px 12px; margin:0; border-radius:50%; font-size:10px;"><i
+                            data-lucide="chevron-left" class="lucide-sm"></i></button>
+                    <div style="text-align:center;">
+                        <h2 id="calendarMonthTitle" style="margin:0; font-size:1.1rem; min-width:140px;">Junio 2026</h2>
+                        <p style="color:var(--text-muted); font-size:12px; margin:2px 0 0 0;">Planificación y Métricas
+                        </p>
+                    </div>
+                    <button class="btn btn-outline" onclick="changeMonth(1)"
+                        style="width:auto; padding:5px 12px; margin:0; border-radius:50%; font-size:10px;"><i
+                            data-lucide="chevron-right" class="lucide-sm"></i></button>
+                </div>
+                <button class="btn btn-primary" onclick="openCalendarModal()"
+                    style="width:auto; margin:0; padding:10px 20px;">+ Nueva Publicación</button>
+            </div>
+
+            <div class="calendar-wrapper">
+                <div class="calendar-weekdays">
+                    <div class="weekday-label">Dom</div>
+                    <div class="weekday-label">Lun</div>
+                    <div class="weekday-label">Mar</div>
+                    <div class="weekday-label">Mié</div>
+                    <div class="weekday-label">Jue</div>
+                    <div class="weekday-label">Vie</div>
+                    <div class="weekday-label">Sáb</div>
+                </div>
+                <div class="calendar-grid" id="mainCellsContainer"></div>
+        </section>
+
+        <!-- WHATSAPP CHAT EN VIVO -->
+        <section id="view-whatsapp" class="view">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <h3 style="margin:0; display:flex; align-items:center; gap:8px;"><i data-lucide="message-square"
+                            style="color:#25d366;"></i> WhatsApp Chat en Vivo</h3>
+                    <span id="waStatusBadge" class="record-badge" style="background:#ef4444; color:#fff;"><i
+                            data-lucide="alert-circle" class="lucide-sm"></i> Desconectado</span>
+                    <small id="waConnectedPhone" style="font-weight:700; color:var(--text-muted);"></small>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button id="btnWaConnectQR" class="btn btn-outline"
+                        style="border-color:#25d366; color:#25d366; margin:0;" onclick="abrirModalWhatsAppQR()">
+                        <i data-lucide="qr-code"></i> Vincular por QR
+                    </button>
+                    <button id="btnWaLogout" class="btn btn-outline"
+                        style="border-color:var(--danger); color:var(--danger); margin:0; display:none;"
+                        onclick="logoutWhatsAppClient()">
+                        <i data-lucide="log-out"></i> Desconectar
+                    </button>
+                    <button class="btn btn-primary" style="margin:0; background:#25d366; border-color:#25d366;"
+                        onclick="abrirModalNuevoChatWA()">
+                        <i data-lucide="plus"></i> Iniciar Chat Nuevo
+                    </button>
+                </div>
+            </div>
+
+            <!-- LAYOUT PANEL CHAT -->
+            <div class="wa-grid-layout">
+                <!-- Panel Izquierdo: Lista de Chats -->
+                <div class="glass-card wa-chats-panel">
+                    <div style="position:relative; margin-bottom:12px;">
+                        <input type="text" id="waSearchChat" placeholder="Buscar por cliente o teléfono..."
+                            oninput="loadWhatsAppChats()"
+                            style="width:100%; padding:8px 12px 8px 34px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text-main); font-size:12px; outline:none;">
+                        <span
+                            style="position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:0.5; display:flex;"><i
+                                data-lucide="search" class="lucide-sm"></i></span>
+                    </div>
+                    <div id="waChatsList"
+                        style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px;">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+
+                <!-- Panel Derecho: Conversación -->
+                <div class="glass-card wa-chat-window">
+                    <div class="wa-chat-window-header">
+                        <div>
+                            <strong id="waActiveChatName" style="font-size:15px;">Selecciona una conversación</strong>
+                            <small id="waActiveChatPhone"
+                                style="display:block; font-size:11px; color:var(--text-muted);"></small>
+                        </div>
+                    </div>
+                    <div id="waMessagesContainer" class="wa-messages-box">
+                        <div style="margin:auto; text-align:center; opacity:0.5; font-size:13px;">
+                            <i data-lucide="message-square"
+                                style="width:40px; height:40px; margin-bottom:8px; color:#25d366;"></i>
+                            <p style="margin:0;">Selecciona un chat o inicia uno nuevo para conversar.</p>
+                        </div>
+                    </div>
+                    <div id="waAttachmentPreview"
+                        style="display:none; padding:8px 14px; background:var(--bg); border-top:1px solid var(--border); align-items:center; justify-content:space-between; font-size:12px; color:var(--text-main);">
+                        <div
+                            style="display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            <i data-lucide="paperclip" style="color:#25d366; flex-shrink:0;"></i>
+                            <span id="waAttachmentName" style="font-weight:700;">archivo.pdf</span>
+                        </div>
+                        <button onclick="clearWaAttachment()"
+                            style="border:none; background:none; color:var(--danger); cursor:pointer; font-size:16px; font-weight:bold; padding:0 6px;">&times;</button>
+                    </div>
+                    <div class="wa-input-bar"
+                        style="display:flex; align-items:flex-end; gap:8px; padding:12px 16px; background:var(--card-bg); border-top:1px solid var(--border);">
+                        <input type="file" id="waFileInput" onchange="handleWaFileSelected(event)" style="display:none;"
+                            accept="image/*,.pdf,.doc,.docx,.xlsx,.txt,.zip">
+                        <button class="btn btn-outline"
+                            style="width:38px; height:38px; min-width:38px; padding:0; margin:0; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:var(--text-muted); flex-shrink:0;"
+                            onclick="triggerWaAttachment()" title="Adjuntar documento o imagen">
+                            <i data-lucide="paperclip" style="width:18px; height:18px;"></i>
+                        </button>
+                        <textarea id="waMessageInput" placeholder="Escribe tu mensaje..." rows="2"
+                            style="flex:1; border-radius:14px; padding:12px 16px; border:1px solid var(--border); background:var(--bg); color:var(--text-main); font-size:14px; min-height:56px; max-height:180px; resize:none; line-height:1.45; font-family:inherit;"></textarea>
+                        <button class="btn btn-primary"
+                            style="width:38px; height:38px; min-width:38px; padding:0; margin:0; background:#25d366; border-color:#25d366; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"
+                            onclick="sendWhatsAppMessage()" title="Enviar mensaje">
+                            <i data-lucide="send" style="width:18px; height:18px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODAL CÓDIGO QR WHATSAPP -->
+        <div id="modalWhatsAppQR" class="calendar-modal-mask" onclick="cerrarModalWhatsAppQR(event)">
+            <div class="calendar-modal animated-entry" style="max-width:380px; text-align:center; padding:24px;"
+                onclick="event.stopPropagation()">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="qr-code" style="color:#25d366;"></i> Vincular WhatsApp
+                    </h3>
+                    <button class="close-wa-qr" onclick="cerrarModalWhatsAppQR()"
+                        style="border:none; background:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+                </div>
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px; line-height:1.4;">
+                    Abre WhatsApp en tu teléfono > Dispositivos vinculados > <strong>Vincular un dispositivo</strong> y
+                    escanea este código.
+                </p>
+                <div
+                    style="background:#ffffff; padding:15px; border-radius:16px; display:inline-flex; align-items:center; justify-content:center; width:250px; height:250px; box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-bottom:15px; position:relative; overflow:hidden;">
+                    <div id="waQrSpinner"
+                        style="display:flex; flex-direction:column; align-items:center; justify-content:center; color:#555; gap:8px;">
+                        <i data-lucide="refresh-cw" class="spinning"
+                            style="width:36px; height:36px; color:#25d366;"></i>
+                        <span style="font-size:12px; font-weight:700;">Generando código QR...</span>
+                    </div>
+                    <img id="imgWhatsAppQR" src="" alt="Código QR WhatsApp"
+                        style="width:220px; height:220px; display:none; border-radius:8px;">
+                </div>
+                <div>
+                    <button class="btn btn-outline" style="font-size:12px; width:100%;" onclick="fetchWhatsAppStatus()">
+                        <i data-lucide="rotate-cw"></i> Actualizar QR
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL NUEVO CHAT WHATSAPP -->
+        <div id="modalNuevoChatWA" class="calendar-modal-mask" onclick="cerrarModalNuevoChatWA(event)">
+            <div class="calendar-modal animated-entry" style="max-width:420px; padding:24px;"
+                onclick="event.stopPropagation()">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="user-plus" style="color:#25d366;"></i> Iniciar Conversación
+                    </h3>
+                    <button class="close-wa-newchat" onclick="cerrarModalNuevoChatWA()"
+                        style="border:none; background:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+                </div>
+                <form onsubmit="submitNuevoChatWA(event)">
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:6px; font-weight:700; font-size:12px;">Número de
+                            Teléfono *</label>
+                        <input type="tel" id="inputNuevoPhoneWA" required placeholder="Ej: 3009523534"
+                            style="width:100% !important;">
+                        <small style="font-size:10px; color:var(--text-muted);">Puedes ingresar celular de 10 dígitos o
+                            con código de país (ej: 573009523534)</small>
+                    </div>
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label style="display:block; margin-bottom:6px; font-weight:700; font-size:12px;">Mensaje
+                            Inicial (Opcional)</label>
+                        <textarea id="inputNuevoMsgWA" placeholder="Hola, te escribimos de MONOS INC..."
+                            style="width:100% !important; min-height:80px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"
+                        style="width:100%; background:#25d366; border-color:#25d366; font-weight:800;">
+                        Iniciar Chat
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL SELECCIÓN CANAL DE WHATSAPP -->
+        <div id="modalSelectWA" class="calendar-modal-mask" onclick="cerrarModalSeleccionWA(event)">
+            <div class="calendar-modal animated-entry" style="max-width:440px; padding:24px; text-align:center;"
+                onclick="event.stopPropagation()">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="message-circle" style="color:#25d366;"></i> Contactar Cliente
+                    </h3>
+                    <button onclick="cerrarModalSeleccionWA()"
+                        style="border:none; background:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+                </div>
+
+                <div
+                    style="background:var(--bg); border:1px solid var(--border); padding:14px; border-radius:12px; margin-bottom:20px;">
+                    <strong id="waSelectClientName"
+                        style="font-size:15px; display:block; color:var(--text-main);">Cliente</strong>
+                    <span id="waSelectClientPhone" style="font-size:13px; font-weight:700; color:#25d366;">+57
+                        0000000000</span>
+                </div>
+
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px; line-height:1.4;">
+                    ¿Cómo deseas comunicarte con este cliente?
+                </p>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button class="btn btn-primary"
+                        style="background:#25d366; border-color:#25d366; padding:12px 18px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;"
+                        onclick="opcionWAInterno()">
+                        <i data-lucide="message-square"></i> Abrir Chat en la Plataforma
+                    </button>
+                    <button class="btn btn-outline"
+                        style="padding:12px 18px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;"
+                        onclick="opcionWAExterno()">
+                        <i data-lucide="external-link"></i> Abrir en WhatsApp Web / App Externa
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DE TARJETA DE LEALTAD (ESTILO WALLET) -->
+        <div id="loyaltyOverlay" class="loyalty-card-overlay" onclick="closeLoyalty(event)">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:15px; max-width:100%;">
+                <div class="loyalty-card-modal animated-entry" id="walletCard" onclick="event.stopPropagation()">
+                    <button class="close-loyalty" onclick="closeLoyalty()">×</button>
+                    <div class="wallet-card-container">
+                        <img src="/wallet_card.jpg" id="walletBgImg" class="wallet-bg-img" alt="Monos Club Card">
+                        <div class="wallet-overlay-layer">
+                            <div id="loyaltyGrid" class="loyalty-stamps-grid">
+                                <!-- 10 Puntos -->
+                            </div>
+                            <div class="wallet-footer-overlay">
+                                <div class="wallet-client-name" id="loyaltyClientName">CLIENTE</div>
+                                <div id="loyaltyAlert" class="loyalty-status-msg">
+                                    <span id="loyaltyCountText">0</span> / 10 PUNTOS ACUMULADOS
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-download-wallet" onclick="downloadLoyaltyCard(); event.stopPropagation();">
+                    <i data-lucide="download"></i> Descargar Tarjeta para Cliente
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL CALENDARIO -->
+        <div id="calendarModalMask" class="calendar-modal-mask" onclick="closeCalendarModal(event)">
+            <div class="calendar-modal animated-entry" onclick="event.stopPropagation()">
+                <div class="calendar-modal-header">
+                    <h3 id="calModalTitle" style="margin:0; font-size:1.2rem;">Nueva Publicación</h3>
+                    <button onclick="closeCalendarModal()"
+                        style="background:none; border:none; font-size:28px; cursor:pointer; color:var(--text-muted); line-height:1;">×</button>
+                </div>
+                <form id="calendarForm">
+                    <input type="hidden" id="calPostId" value="">
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Título del
+                            Contenido</label>
+                        <input type="text" id="calTitle" placeholder="Ej. Lanzamiento Nueva Colección" required
+                            style="width:100% !important;">
+                    </div>
+                    <div class="form-row"
+                        style="margin-bottom:15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <div class="form-group">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Plataforma</label>
+                            <select id="calPlatform" required style="width:100% !important;">
+                                <option value="instagram">Instagram</option>
+                                <option value="tiktok">TikTok</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Tipo</label>
+                            <select id="calType" required style="width:100% !important;">
+                                <option value="post">Post</option>
+                                <option value="story">Historia</option>
+                                <option value="reel">Reel</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Días</label>
+                            <select id="calDay" multiple required
+                                style="width:100% !important; min-height: 45px;"></select>
+                            <small style="font-size: 9px; display: block; margin-top: 2px;">(Ctrl+Click)</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Métricas</label>
+                        <div class="calendar-metrics-grid">
+                            <div class="metric-input-group"><small
+                                    style="font-size:10px; display:block; margin-bottom:4px; opacity:0.7; display:flex; align-items:center; gap:2px;"><i
+                                        data-lucide="eye" class="lucide-sm"></i>
+                                    Vistas</small><input type="number" id="calViews" value="0"></div>
+                            <div class="metric-input-group"><small
+                                    style="font-size:10px; display:block; margin-bottom:4px; opacity:0.7; display:flex; align-items:center; gap:2px;"><i
+                                        data-lucide="heart" class="lucide-sm"></i>
+                                    Likes</small><input type="number" id="calLikes" value="0"></div>
+                            <div class="metric-input-group"><small
+                                    style="font-size:10px; display:block; margin-bottom:4px; opacity:0.7; display:flex; align-items:center; gap:2px;"><i
+                                        data-lucide="message-square" class="lucide-sm"></i>
+                                    Coms</small><input type="number" id="calComments" value="0"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:25px;">
+                        <button type="button" class="btn" onclick="eliminarPost()"
+                            style="flex:1; background:#f4f4f4; color:var(--danger); border:1px solid #eee; display:flex; align-items:center; justify-content:center; gap:6px;"><i
+                                data-lucide="trash-2"></i>
+                            Borrar</button>
+                        <button type="submit" class="btn btn-primary" style="flex:2; font-weight:800;">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTOR DE CORREOS ELECTRONICOS CON PLANTILLAS HTML -->
+    <div id="modalEmailManager" class="calendar-modal-mask" onclick="closeEmailModal(event)">
+        <div class="calendar-modal animated-entry" style="max-width:720px; width:92%; padding:24px;"
+            onclick="event.stopPropagation()">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
+                <h3 style="margin:0; font-size:1.2rem; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="mail" style="color:var(--primary);"></i> Gestor de Correos &amp; Plantillas HTML
+                </h3>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="openSmtpConfigModal()"
+                        style="font-size:11px; padding:4px 10px; border-color:#3b82f6; color:#3b82f6; font-weight:700;">
+                        <i data-lucide="settings"></i> Configuración SMTP
+                    </button>
+                    <button onclick="closeEmailModal()"
+                        style="border:none; background:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+                </div>
+            </div>
+
+            <!-- Botones Rápidos de Estado -->
+            <div style="margin-bottom:16px;">
+                <label
+                    style="display:block; font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Plantilla
+                    de Estado Rápido:</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="selectEmailStateTemplate('empacado')"
+                        style="border-color:#10b981; color:#10b981; font-weight:700;">
+                        <i data-lucide="package"></i> Empacado
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="selectEmailStateTemplate('enviado')"
+                        style="border-color:#3b82f6; color:#3b82f6; font-weight:700;">
+                        <i data-lucide="truck"></i> Enviado
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="selectEmailStateTemplate('entregado')"
+                        style="border-color:#8b5cf6; color:#8b5cf6; font-weight:700;">
+                        <i data-lucide="check-circle-2"></i> Entregado
+                    </button>
+                </div>
+            </div>
+
+            <form onsubmit="submitSendEmailForm(event)">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Para (Email
+                            Cliente) *</label>
+                        <input type="email" id="emailRecipientInput" required style="width:100% !important;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Alias de
+                            Remitente *</label>
+                        <input type="text" id="emailSenderAliasInput"
+                            placeholder="MONOS INC &lt;ventas@monosincorp.com&gt;" style="width:100% !important;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Asunto del Correo
+                        *</label>
+                    <input type="text" id="emailSubjectInput" required placeholder="Asunto del mensaje..."
+                        style="width:100% !important;">
+                </div>
+
+                <!-- Pestañas Editor / Previsualización -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" id="btnTabEditHtml" class="btn btn-sm btn-primary"
+                            onclick="switchEmailTab('edit')">
+                            <i data-lucide="code"></i> Editor HTML
+                        </button>
+                        <button type="button" id="btnTabPreviewHtml" class="btn btn-sm btn-outline"
+                            onclick="switchEmailTab('preview')">
+                            <i data-lucide="eye"></i> Previsualización en Vivo
+                        </button>
+                    </div>
+                    <span style="font-size:11px; color:var(--text-muted);">Tokens: <code>{cliente}</code>,
+                        <code>{producto}</code>, <code>{guia}</code>, <code>{whatsapp_link}</code></span>
+                </div>
+
+                <!-- Contenido Editor -->
+                <div id="emailEditorTabContent">
+                    <textarea id="emailHtmlBodyInput"
+                        style="width:100% !important; min-height:220px; font-family:monospace; font-size:12px; line-height:1.4;"
+                        placeholder="<p>Hola {cliente}, ...</p>"></textarea>
+                </div>
+
+                <!-- Contenido Previsualización -->
+                <div id="emailPreviewTabContent"
+                    style="display:none; min-height:220px; max-height:360px; overflow-y:auto; background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:16px; color:#1e293b;">
+                    <!-- Renderizado en tiempo real -->
+                </div>
+
+                <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+                    <div id="emailStatusMsg" style="font-size:12px; font-weight:700;"></div>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="btn btn-outline" onclick="closeEmailModal()">Cancelar</button>
+                        <button type="submit" id="btnSubmitEmail" class="btn btn-primary" style="font-weight:800;">
+                            <i data-lucide="send"></i> Enviar Correo
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIGURACIÓN SMTP REAL DE CORREOS -->
+    <div id="modalSmtpConfig" class="calendar-modal-mask" onclick="closeSmtpConfigModal(event)">
+        <div class="calendar-modal animated-entry" style="max-width:500px; width:92%; padding:24px;"
+            onclick="event.stopPropagation()">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
+                <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="server" style="color:#3b82f6;"></i> Configuración Servidor SMTP Real
+                </h3>
+                <button onclick="closeSmtpConfigModal()"
+                    style="border:none; background:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px; line-height:1.5;">
+                Selecciona tu proveedor de correo o ingresa los datos SMTP de tu empresa para conectar con tu
+                <strong>usuario y contraseña</strong>.
+            </p>
+
+            <!-- Preajustes Rápidos de Proveedor (Outlook, Gmail, Personalizado) -->
+            <div style="margin-bottom:16px;">
+                <label
+                    style="display:block; font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Conectar
+                    Proveedor Rápidamente:</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+                    <button type="button" class="btn btn-outline btn-smtp-provider"
+                        onclick="selectSmtpProvider('outlook')" id="btnPresetOutlook"
+                        style="font-size:11px; padding:8px 6px; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:700; border-color:#0078d4; color:#0078d4;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M1 17.5L9.5 20V4L1 6.5v11zm10 2.3l12 1.7V2.5L11 4.2v15.6zm1-13.8l9-1.2v14.4l-9-1.3V6z" />
+                        </svg>
+                        Outlook / Office365
+                    </button>
+                    <button type="button" class="btn btn-outline btn-smtp-provider"
+                        onclick="selectSmtpProvider('gmail')" id="btnPresetGmail"
+                        style="font-size:11px; padding:8px 6px; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:700; border-color:#ea4335; color:#ea4335;">
+                        <i data-lucide="mail"></i> Gmail
+                    </button>
+                    <button type="button" class="btn btn-outline btn-smtp-provider"
+                        onclick="selectSmtpProvider('custom')" id="btnPresetCustom"
+                        style="font-size:11px; padding:8px 6px; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:700;">
+                        <i data-lucide="server"></i> Otro / cPanel
+                    </button>
+                </div>
+            </div>
+
+            <div id="smtpProviderHint"
+                style="display:none; margin-bottom:14px; padding:10px 12px; border-radius:8px; font-size:11px; background:rgba(0,120,212,0.1); border:1px solid rgba(0,120,212,0.3); color:var(--text-main); line-height:1.4;">
+            </div>
+
+            <form onsubmit="submitSmtpConfigForm(event)">
+                <div style="margin-bottom:12px;">
+                    <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Servidor SMTP
+                        (Host) *</label>
+                    <input type="text" id="smtpHostInput" required
+                        placeholder="Ej: smtp.office365.com o smtp.hostinger.com" style="width:100% !important;">
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Puerto
+                            *</label>
+                        <input type="number" id="smtpPortInput" required placeholder="587 o 465" value="587"
+                            style="width:100% !important;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Seguridad
+                            SSL/TLS</label>
+                        <select id="smtpSecureInput"
+                            style="width:100% !important; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">
+                            <option value="false">STARTTLS (Puerto 587)</option>
+                            <option value="true">SSL/TLS (Puerto 465)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Usuario / Correo
+                        Emisor *</label>
+                    <input type="email" id="smtpUserInput" required
+                        placeholder="Ej: tu_usuario@outlook.com o ventas@tuempresa.com" style="width:100% !important;">
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Contraseña o App
+                        Password *</label>
+                    <input type="password" id="smtpPassInput" placeholder="••••••••••••" style="width:100% !important;">
+                    <small id="smtpPassHelpText"
+                        style="font-size:10px; color:var(--text-muted); display:block; margin-top:4px;">Ingresa la
+                        contraseña de tu cuenta de correo o la Contraseña de Aplicación correspondiente.</small>
+                </div>
+
+                <div id="smtpStatusMsg" style="font-size:12px; font-weight:700; margin-bottom:12px;"></div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn btn-outline" onclick="closeSmtpConfigModal()">Cancelar</button>
+                    <button type="submit" id="btnSaveSmtp" class="btn btn-primary" style="font-weight:800;">
+                        <i data-lucide="save"></i> Guardar Credenciales SMTP
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ETIQUETAS DE ENVÍO -->
+    <div id="modalGuiaMask" class="calendar-modal-mask" onclick="cerrarModalGuia(event)">
+        <div class="calendar-modal"
+            style="max-width: 620px; max-height: 92vh; display: flex; flex-direction: column; padding: 20px;">
+            <div class="calendar-modal-header"
+                style="align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="tag"></i> Generador de Etiquetas de Envío
+                </h3>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button type="button" class="btn btn-primary" style="padding: 6px 14px; font-size:12px; margin:0;"
+                        onclick="imprimirGuiaEtiquetas()">
+                        <i data-lucide="printer"></i> Imprimir
+                    </button>
+                    <button type="button" class="btn btn-outline"
+                        style="padding: 6px 14px; font-size:12px; margin:0; border-color:#16a34a; color:#4ade80;"
+                        onclick="generarGuiaExcel()">
+                        <i data-lucide="file-spreadsheet"></i> Excel
+                    </button>
+                    <button type="button" onclick="cerrarModalGuia()"
+                        style="border:none; background:none; cursor:pointer; font-size:22px; color:var(--text-muted);">&times;</button>
+                </div>
+            </div>
+
+            <!-- CONTROLES DE NAVEGACIÓN -->
+            <div id="guiaNavControls"
+                style="display:none; justify-content:space-between; align-items:center; margin-bottom:12px; background:var(--bg); padding:8px 14px; border-radius:10px; border:1px solid var(--border);">
+                <button type="button" class="btn btn-outline"
+                    style="width:auto; margin:0; padding:6px 14px; font-size:12px;" onclick="cambiarGuiaActual(-1)">
+                    <i data-lucide="chevron-left"></i> Anterior
+                </button>
+                <span id="guiaNavBadge" style="font-weight:800; font-size:13px; color:var(--text-main);">Guía 1 de
+                    1</span>
+                <button type="button" class="btn btn-outline"
+                    style="width:auto; margin:0; padding:6px 12px; font-size:12px;" onclick="cambiarGuiaActual(1)">
+                    Siguiente <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- CONTENEDOR EN PANTALLA (1 ETIQUETA A LA VEZ) -->
+            <div id="guiaSingleCardContainer"
+                style="overflow-y:auto; padding: 5px; flex: 1; display:flex; justify-content:center; align-items:center;">
+                <!-- Tarjeta Activa -->
+            </div>
+
+            <!-- CONTENEDOR OCULTO PARA IMPRESIÓN (TODAS LAS ETIQUETAS) -->
+            <div id="guiaAllCardsPrintContainer" style="display:none;">
+                <!-- Todas las Tarjetas -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRAR NUEVA VENTA -->
+    <div id="modalNuevaVenta" class="calendar-modal-mask" onclick="closeVentaModal(event)">
+        <div class="calendar-modal animated-entry venta-modal" onclick="event.stopPropagation()">
+            <div class="calendar-modal-header">
+                <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="file-plus-2" style="color:var(--primary);"></i> Registrar Nueva Venta
+                </h3>
+                <button onclick="closeVentaModal()"
+                    style="background:none; border:none; font-size:26px; cursor:pointer; color:var(--text-muted); line-height:1;">&times;</button>
+            </div>
+            <div style="overflow-y:auto; max-height:72vh; padding-right:4px;">
+                <form id="ventaForm">
+                    <div id="garmentsContainer"></div>
+                    <button type="button" id="btnAddGarment" class="btn btn-outline"
+                        style="margin-bottom:20px; border-style:dashed; border-color:var(--primary); color:var(--primary); font-weight:700;"
+                        onclick="createGarmentBlock()">+ Agregar Otra Prenda</button>
+
+                    <div style="border-top:1px solid var(--border); padding-top:15px; margin-top:10px;">
+                        <h4
+                            style="margin:0 0 15px 0; font-size:11px; text-transform:uppercase; color:var(--text-muted);">
+                            Datos del Cliente</h4>
+                        <div class="form-row">
+                            <div class="form-group"><label>Cliente *</label><input type="text" id="cliente" required
+                                    list="listaClientes" placeholder="Nombre..."><datalist
+                                    id="listaClientes"></datalist><datalist id="listaProd"></datalist></div>
+                            <div class="form-group"><label>Cédula *</label><input type="text" id="cedula" required
+                                    placeholder="No. Identificación..."></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Teléfono *</label><input type="tel" id="telefono" required
+                                    placeholder="Contacto..."></div>
+                            <div class="form-group"><label>Email *</label><input type="email" id="email" required
+                                    placeholder="Correo..."></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Dirección *</label><input type="text" id="direccion" required
+                                    placeholder="Dirección de envío..."></div>
+                            <div class="form-group">
+                                <label>Envío *</label>
+                                <select id="envio" required>
+                                    <option value="Pago">Pago</option>
+                                    <option value="Contraentrega">Contraentrega</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>País *</label><input type="text" id="pais" required
+                                    list="listaPaises" placeholder="País..."><datalist id="listaPaises"></datalist>
+                            </div>
+                            <div class="form-group"><label>Ciudad *</label><input type="text" id="ciudad"
+                                    list="listaCiudades" required placeholder="Ciudad..."><datalist
+                                    id="listaCiudades"></datalist></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Fecha *</label><input type="date" id="fecha" required></div>
+                            <div class="form-group">
+                                <label>Plataforma *</label>
+                                <select id="plataforma" required>
+                                    <option value="Whatsapp">Whatsapp</option>
+                                    <option value="Instagram">Instagram</option>
+                                    <option value="Tiktok">Tiktok</option>
+                                    <option value="Página Web">Página Web</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:flex; align-items:center; gap:4px;"><i data-lucide="truck"
+                                    class="lucide-sm"></i> Guía de Envío</label>
+                            <input type="text" id="guia" placeholder="Número de guía...">
+                        </div>
+                    </div>
+                    <div
+                        style="display:flex; gap:10px; margin-top:20px; border-top:1px solid var(--border); padding-top:16px;">
+                        <button type="submit" id="btnSubmit" class="btn btn-primary" style="flex:2; font-weight:800;">
+                            <i data-lucide="check"></i> Registrar Venta
+                        </button>
+                        <button type="button" id="btnCancelEdit" class="btn btn-cancel" style="display:none; flex:1;"
+                            onclick="cancelarEdicion()">Cancelar Edición</button>
+                    </div>
+                </form>
+
+                <div
+                    style="display:grid; gap:8px; margin-top:16px; border-top:1px solid var(--border); padding-top:14px;">
+                    <button class="btn btn-outline" onclick="exportarVentas()"><i data-lucide="download"></i> Exportar
+                        Backup</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('importV').click()"><i
+                            data-lucide="upload"></i> Importar Backup</button>
+                    <input type="file" id="importV" accept=".csv" style="display:none;" onchange="importarVentas(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/calendar.js"></script>
+    <script src="/js/loyalty.js"></script>
+    <script src="/js/whatsapp.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        // ── DRAWER (Solo para móvil / tablets) ──
+        function openDrawer() {
+            if (window.innerWidth > 992) return; // Solo móvil y tablets
+            document.getElementById('mainDrawer').classList.add('open');
+            document.getElementById('drawerOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeDrawer() {
+            document.getElementById('mainDrawer').classList.remove('open');
+            document.getElementById('drawerOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 992) {
+                closeDrawer();
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { closeDrawer(); _closeVentaModal(); }
+        });
+
+        // ── MODAL NUEVA VENTA ──
+        function openVentaModal() {
+            document.getElementById('modalNuevaVenta').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function _closeVentaModal() {
+            document.getElementById('modalNuevaVenta').style.display = 'none';
+            document.body.style.overflow = '';
+            // Resetear estado de edición si se cierra sin guardar
+            if (typeof editingId !== 'undefined' && editingId !== null) {
+                if (typeof cancelarEdicion === 'function') {
+                    // cancelarEdicion cierra el modal, así que sólo reseteamos sin volver a cerrar
+                    editingId = null;
+                    const btnSubmit = document.getElementById('btnSubmit');
+                    if (btnSubmit) btnSubmit.innerHTML = '<i data-lucide="check"></i> Registrar Venta';
+                    const btnCancel = document.getElementById('btnCancelEdit');
+                    if (btnCancel) btnCancel.style.display = 'none';
+                    const modalTitle = document.querySelector('#modalNuevaVenta .calendar-modal-header h3');
+                    if (modalTitle) modalTitle.innerHTML = '<i data-lucide="file-plus-2" style="color:var(--primary);"></i> Registrar Nueva Venta';
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            }
+        }
+        function closeVentaModal(e) {
+            if (!e || e.target === document.getElementById('modalNuevaVenta')) {
+                _closeVentaModal();
+            }
+        }
+
+        // ── SWITCH TAB ──
+        function switchTab(tab) {
+            // Ocultar todas las vistas
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            // Mostrar la vista activa
+            const view = document.getElementById('view-' + tab);
+            if (view) view.classList.add('active');
+
+            // Actualizar drawer links y desktop nav links
+            document.querySelectorAll('.drawer-link, .desktop-nav-link').forEach(btn => {
+                const isActive = (btn.dataset.tab === tab) || (btn.id === 'tab-' + tab) || (btn.id === 'desk-tab-' + tab);
+                btn.classList.toggle('active', isActive);
+            });
+
+            // Actualizar label en header
+            const labels = {
+                ventas: 'Gestión', whatsapp: 'WhatsApp', egresos: 'Egresos',
+                stats: 'Reportes', clientes: 'Clientes', calendario: 'Calendario'
+            };
+            const lbl = document.getElementById('activeTabLabel');
+            if (lbl) lbl.textContent = labels[tab] || '';
+
+            // Mostrar/ocultar botón + según la pestaña
+            const fabBtn = document.getElementById('btnOpenVentaModal');
+            if (fabBtn) fabBtn.style.display = tab === 'ventas' ? '' : 'none';
+
+            // Render condicional
+            if (tab === 'stats' && typeof renderTemporalStats === 'function') renderTemporalStats();
+            if (tab === 'clientes' && typeof renderLealtad === 'function') renderLealtad();
+            if (typeof renderCalendario === 'function') renderCalendario();
+            if (tab === 'whatsapp' && typeof initWhatsAppTab === 'function') initWhatsAppTab();
+        }
+    </script>
+</body>
+
+</html>

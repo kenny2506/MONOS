@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Base de Datos Relacional PostgreSQL 16
+  postgres:
+    image: postgres:16-alpine
+    container_name: monos_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${PGUSER:-monos_user}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-MonosSecure2026*}
+      POSTGRES_DB: ${PGDATABASE:-monos_db}
+    ports:
+      - "${PGPORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-monos_user} -d ${PGDATABASE:-monos_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - monos_network
+
+  # Aplicación Monos Multitienda
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: monos_app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3020
+      DATABASE_URL: postgres://${PGUSER:-monos_user}:${PGPASSWORD:-MonosSecure2026*}@postgres:5432/${PGDATABASE:-monos_db}
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: ${PGUSER:-monos_user}
+      PGPASSWORD: ${PGPASSWORD:-MonosSecure2026*}
+      PGDATABASE: ${PGDATABASE:-monos_db}
+    ports:
+      - "3020:3020"
+    volumes:
+      - ./data.json:/app/data.json
+      - ./whatsapp_sessions:/app/whatsapp_sessions
+    networks:
+      - monos_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  monos_network:
+    driver: bridge

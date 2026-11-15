@@ -1,0 +1,3158 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas Monos</title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-rgb: 99, 102, 241;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #f43f5e;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        [data-theme="dark"] {
+            --bg: #020617;
+            --card: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        html {
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .container-max {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-space {
+            width: 45px;
+            height: 45px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-space img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .record-badge {
+            background: var(--primary);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        /* NAVEGACIÓN */
+        .tab-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+            overflow-x: auto;
+            justify-content: flex-start;
+        }
+
+        @media (min-width: 768px) {
+            .tab-nav {
+                justify-content: flex-start;
+            }
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 700;
+            border-radius: 12px;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: var(--bg);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* --- CALENDAR INTEGRATION --- */
+        .calendar-wrapper {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .weekday-label {
+            padding: 15px;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(140px, auto);
+        }
+
+        .calendar-cell {
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 10px;
+            background: var(--card);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            min-height: 140px;
+        }
+
+        .calendar-cell .cell-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 0;
+        }
+
+        .calendar-cell:nth-child(7n) {
+            border-right: none;
+        }
+
+        .calendar-cell.active-month .cell-number {
+            color: var(--text-main);
+            font-weight: 800;
+        }
+
+        .calendar-cell.blank-day {
+            background: var(--bg);
+            opacity: 0.5;
+        }
+
+        .cell-number {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .calendar-cell.drag-over {
+            background: rgba(var(--primary-rgb), 0.05);
+            box-shadow: inset 0 0 0 2px var(--primary);
+        }
+
+        .post-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: grab;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 10;
+            min-height: 60px;
+        }
+
+        .post-card.instagram {
+            background-color: #fff0f5 !important;
+            border: 1px solid rgba(225, 48, 108, 0.2);
+            border-left: 4px solid #e1306c;
+        }
+
+        .post-card.tiktok {
+            background-color: #f7f7f7 !important;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #000;
+        }
+
+        .post-card-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #000 !important;
+            margin: 4px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .platform-badge {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        .post-metrics-summary {
+            display: flex;
+            gap: 6px;
+            border-top: 1px dashed var(--border);
+            padding-top: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Modal Calendario */
+        .calendar-modal-mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .calendar-modal {
+            background: var(--card);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .calendar-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .metric-input-group {
+            background: var(--bg);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .metric-input-group input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            text-align: center;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* --- COLLAPSIBLE FORM --- */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 0;
+            transition: 0.2s;
+        }
+
+        .collapsible-header:hover {
+            opacity: 0.8;
+        }
+
+        .collapsible-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* COMPORTAMIENTO DESKTOP (Minimiza Panel Izquierdo) */
+        @media (min-width: 769px) {
+            .dashboard-grid {
+                transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .dashboard-grid.aside-collapsed {
+                grid-template-columns: 80px 1fr;
+            }
+
+            .dashboard-grid.aside-collapsed aside .glass-card {
+                padding: 24px 15px;
+                overflow: hidden;
+            }
+
+            .dashboard-grid.aside-collapsed aside h3,
+            .dashboard-grid.aside-collapsed aside .export-import-container {
+                display: none !important;
+            }
+
+            .dashboard-grid.aside-collapsed aside .collapsible-header {
+                justify-content: center;
+                margin-bottom: 0px;
+            }
+
+            .dashboard-grid.aside-collapsed aside .toggle-icon {
+                transform: rotate(-90deg);
+                font-size: 20px;
+            }
+
+            .dashboard-grid.aside-collapsed aside>div:not(.glass-card) {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .collapsible-body {
+                display: block;
+                transition: opacity 0.3s ease-out;
+                opacity: 1;
+                margin-top: 15px;
+            }
+
+            .collapsible-body.collapsed {
+                opacity: 0;
+                pointer-events: none;
+                height: 0px;
+                margin-top: 0;
+                overflow: hidden;
+            }
+
+            .collapsible-inner {
+                min-width: 320px;
+                height: 100%;
+            }
+        }
+
+        /* COMPORTAMIENTO MÓVIL (Vertical de Arriba a Abajo) */
+        @media (max-width: 768px) {
+            .collapsible-body {
+                display: grid;
+                grid-template-rows: 1fr;
+                transition: grid-template-rows 0.3s ease-out, opacity 0.3s ease-out, margin-top 0.3s ease-out;
+                opacity: 1;
+                margin-top: 15px;
+            }
+
+            .collapsible-body.collapsed {
+                grid-template-rows: 0fr;
+                opacity: 0;
+                margin-top: 0;
+                pointer-events: none;
+            }
+
+            .collapsible-inner {
+                overflow: hidden;
+            }
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        /* VISTAS */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: grid;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+
+        .glass-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.15);
+            border-color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-main);
+            outline: none;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+        }
+
+        /* BOTONES (SIMETRÍA UX) */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: var(--bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-top: 8px;
+            padding: 10px;
+        }
+
+        .table-window {
+            max-height: 850px;
+            height: calc(100vh - 280px);
+            min-height: 520px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        tr.data-row td {
+            background: var(--card);
+            padding: 12px;
+            border: 1px solid var(--border);
+            vertical-align: middle;
+            transition: background 0.3s ease;
+        }
+
+        tr.data-row:hover td {
+            background: var(--bg);
+        }
+
+        tr.data-row td:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        tr.data-row td:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        tr.data-row.selected td {
+            background: rgba(var(--primary-rgb), 0.08);
+            border-color: rgba(var(--primary-rgb), 0.25);
+        }
+
+        tr.data-row.selected td:first-child {
+            border-left: 3px solid var(--primary);
+        }
+
+        tr.data-row.multiple-items td {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        tr.data-row.multiple-items:hover td {
+            background: rgba(245, 158, 11, 0.15) !important;
+        }
+
+        tr.data-row.row-cambio td {
+            background: rgba(239, 68, 68, 0.18) !important;
+            border-color: rgba(239, 68, 68, 0.4) !important;
+        }
+
+        tr.data-row.row-cambio:hover td {
+            background: rgba(239, 68, 68, 0.28) !important;
+        }
+
+        .img-mini {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            cursor: zoom-in;
+        }
+
+        .status-select {
+            width: 105px;
+            padding: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .st-pendiente {
+            background: var(--warning);
+            color: #fff;
+        }
+
+        .st-enviado {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .st-entregado {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .st-cambio {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* RANKING LEALTAD */
+        .loyalty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .client-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+        }
+
+        .client-rank {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary);
+            opacity: 0.1;
+        }
+
+        .client-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            border-bottom: 1px dashed var(--border);
+            padding: 10px 0;
+        }
+
+        .client-stat:last-child {
+            border-bottom: none;
+        }
+
+        /* MODAL & TOAST */
+        #imgModal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #imgModal img {
+            max-width: 90%;
+            max-height: 85%;
+            border-radius: 12px;
+        }
+
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: var(--card);
+            padding: 12px 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            margin-top: 10px;
+            animation: slide 0.3s forwards;
+        }
+
+        @keyframes slide {
+            from {
+                transform: translateX(100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        /* Estilo Wallet Card con Plantilla de Imagen */
+        .loyalty-card-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .loyalty-card-modal {
+            width: 380px;
+            border-radius: 24px;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            border: none;
+            background: transparent;
+        }
+
+        .wallet-card-container {
+            position: relative;
+            width: 380px;
+            height: 454px;
+            border-radius: 24px;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .wallet-bg-img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+        }
+
+        .wallet-overlay-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .loyalty-stamps-grid {
+            position: absolute;
+            top: 28.8%;
+            left: 6.8%;
+            width: 85.8%;
+            height: 25.5%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 16px 0px;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .wallet-dot-stamp {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            background: transparent;
+        }
+
+        .wallet-dot-stamp img {
+            display: block;
+            margin: auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .wallet-dot-stamp.filled {
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            transform: scale(1);
+            animation: stampPop 0.3s ease-out;
+        }
+
+        @keyframes stampPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            80% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1.06);
+                opacity: 1;
+            }
+        }
+
+        .wallet-footer-overlay {
+            position: absolute;
+            bottom: 22px;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        .wallet-client-name {
+            font-size: 15px;
+            font-weight: 900;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+            border: 2px solid #facc15;
+            color: #ffffff;
+            padding: 6px 20px;
+            border-radius: 25px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .loyalty-status-msg {
+            font-size: 11px;
+            font-weight: 800;
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 4px 14px;
+            border-radius: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .full-loyalty-blink {
+            animation: loyalty-blink 1s infinite alternate;
+        }
+
+        @keyframes loyalty-blink {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            to {
+                opacity: 0.7;
+                transform: scale(1.02);
+            }
+        }
+
+        .client-card {
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .client-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .mini-progress-loyalty {
+            display: flex;
+            gap: 3px;
+            margin-top: 15px;
+        }
+
+        .mini-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mini-dot.filled {
+            background: var(--primary);
+        }
+
+        .close-loyalty {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
+            line-height: 32px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* RESPONSIVIDAD MÓVIL */
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+
+            #ventaForm>div[style] {
+                grid-template-columns: 1fr !important;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .container-max {
+                width: 100%;
+                padding: 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px !important;
+            }
+
+            .tab-nav {
+                padding-bottom: 5px;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 6px;
+            }
+
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+
+            .glass-card {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .main-header {
+                flex-direction: row;
+                gap: 8px;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .brand {
+                width: auto;
+                gap: 6px;
+                min-width: 0;
+                flex-shrink: 1;
+            }
+
+            .logo-space {
+                width: 30px;
+                height: 30px;
+                flex-shrink: 0;
+            }
+
+            .brand h1 {
+                font-size: 0.95rem !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .main-header>div:last-child {
+                gap: 6px !important;
+                flex-shrink: 0;
+            }
+
+            .record-badge {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+
+            #themeBtn {
+                padding: 6px 8px !important;
+                font-size: 14px;
+            }
+
+            .main-header a[href="/logout"] {
+                padding: 6px 8px !important;
+                font-size: 10px !important;
+            }
+
+            .loyalty-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .loyalty-card-overlay {
+                padding: 10px;
+            }
+
+            input,
+            select,
+            textarea {
+                max-width: 100%;
+                font-size: 14px;
+            }
+
+            .status-select {
+                width: 100% !important;
+            }
+
+            .table-window {
+                max-height: none;
+                height: auto;
+            }
+
+            /* Responsive table adjustments */
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr.data-row {
+                margin-bottom: 25px;
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                background: var(--card);
+                overflow: hidden;
+            }
+
+            tr.data-row td {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                border: none;
+                border-bottom: 1px solid var(--border);
+                padding: 16px;
+                word-break: break-word;
+            }
+
+            tr.data-row td:last-child {
+                border-bottom: 0;
+                align-items: center;
+                background: var(--bg);
+            }
+
+            tr.data-row td::before {
+                content: attr(data-label);
+                font-weight: 800;
+                color: var(--primary);
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                opacity: 0.8;
+            }
+
+            /* Para campos simples, mantenemos horizontal si hay espacio */
+            tr.data-row td[data-label="Sel."],
+            tr.data-row td[data-label="Img"],
+            tr.data-row td[data-label="Estado"],
+            tr.data-row td[data-label="Acción"],
+            tr.data-row td[data-label="Acciones"] {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #view-stats>div {
+                grid-template-columns: 1fr !important;
+            }
+
+            #semDiv,
+            #mesDiv,
+            #totDiv {
+                font-size: 11px;
+            }
+
+            .img-mini {
+                width: 40px;
+                height: 40px;
+            }
+
+            #photoPreview {
+                height: 150px !important;
+            }
+
+            /* CALENDARIO MOVIL */
+            .calendar-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -12px;
+                padding: 0 12px;
+            }
+
+            .calendar-grid,
+            .calendar-weekdays {
+                min-width: 650px;
+            }
+
+            .weekday-label {
+                padding: 8px;
+                font-size: 10px;
+            }
+
+            .calendar-cell {
+                min-height: 110px;
+                padding: 6px;
+            }
+
+            .post-card {
+                padding: 4px;
+            }
+
+            .post-card-title {
+                font-size: 10px;
+            }
+
+            .post-metrics-summary {
+                font-size: 9px;
+                gap: 4px;
+            }
+
+            #calendarMonthTitle {
+                font-size: 1.2rem !important;
+            }
+
+            #view-calendario .dashboard-header button {
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+            }
+        }
+
+        Broadway Broadway
+    </style>
+</head>
+
+<body>
+
+    <div id="toast-container"></div>
+    <div id="imgModal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
+
+    <div class="container-max">
+        <header class="main-header">
+            <div class="brand">
+                <div class="logo-space"><img src="/Logo.png" alt="Logo" id="headerLogo"></div>
+                <div>
+                    <h1 style="margin:0; font-size: 1.3rem;" id="headerTitle">Cargando...</h1>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+                <div class="record-badge"><span id="countTop">0</span> Pedidos</div>
+                <button id="themeBtn"
+                    style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 12px; cursor:pointer;">🌙</button>
+                <a href="/logout"
+                    style="background:var(--danger); color:white; border:1px solid var(--danger); border-radius:10px; padding:8px 12px; cursor:pointer; text-decoration:none; font-size:12px; font-weight:700;">
+                    Salir</a>
+            </div>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" id="tab-ventas" onclick="switchTab('ventas')">🛒 Gestión</button>
+            <button class="tab-btn" id="tab-egresos" onclick="switchTab('egresos')">💸 Egresos</button>
+            <button class="tab-btn" id="tab-stats" onclick="switchTab('stats')">📊 Reportes</button>
+            <button class="tab-btn" id="tab-clientes" onclick="switchTab('clientes')">💎 Clientes</button>
+            <button class="tab-btn" id="tab-calendario" onclick="switchTab('calendario')">📅 Calendario</button>
+        </nav>
+
+        <!-- GESTIÓN -->
+        <section id="view-ventas" class="view active dashboard-grid">
+            <aside>
+                <div class="glass-card">
+                    <div class="collapsible-header" onclick="toggleVentaForm()">
+                        <h3 style="margin:0; font-size:1rem;">📝 Registrar Nueva Venta</h3>
+                        <span id="ventaToggleIcon" class="toggle-icon">▼</span>
+                    </div>
+
+                    <div id="ventaCollapsible" class="collapsible-body collapsed">
+                        <div class="collapsible-inner">
+                            <form id="ventaForm">
+                                <!-- Dynamic Garments Area -->
+                                <div id="garmentsContainer"></div>
+                                <button type="button" id="btnAddGarment" class="btn btn-outline"
+                                    style="margin-bottom: 20px; border-style: dashed; border-color: var(--primary); color: var(--primary); font-weight: 700; width: 100%; display: block;"
+                                    onclick="createGarmentBlock()">+ Agregar Otra Prenda</button>
+
+                                <!-- Informacion General/Cliente -->
+                                <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 10px;">
+                                    <h4
+                                        style="margin: 0 0 15px 0; font-size: 11px; text-transform: uppercase; color: var(--text-muted);">
+                                        Datos del Cliente</h4>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Cliente *</label><input type="text" id="cliente"
+                                                required list="listaClientes" placeholder="Nombre..."><datalist
+                                                id="listaClientes"></datalist><datalist id="listaProd"></datalist></div>
+                                        <div class="form-group"><label>Cédula *</label><input type="text" id="cedula"
+                                                required placeholder="No. Identificación..."></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Teléfono *</label><input type="tel" id="telefono"
+                                                required placeholder="Contacto..."></div>
+                                        <div class="form-group"><label>Email *</label><input type="email" id="email"
+                                                required placeholder="Correo..."></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Dirección *</label><input type="text"
+                                                id="direccion" required placeholder="Dirección de envío..."></div>
+                                        <div class="form-group">
+                                            <label>Envío *</label>
+                                            <select id="envio" required>
+                                                <option value="Pago">Pago</option>
+                                                <option value="Contraentrega">Contraentrega</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>País *</label><input type="text" id="pais"
+                                                required list="listaPaises" placeholder="País..."><datalist
+                                                id="listaPaises"></datalist></div>
+                                        <div class="form-group"><label>Ciudad *</label><input type="text" id="ciudad"
+                                                list="listaCiudades" required placeholder="Ciudad..."><datalist
+                                                id="listaCiudades"></datalist></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Fecha *</label><input type="date" id="fecha"
+                                                required></div>
+                                        <div class="form-group">
+                                            <label>Plataforma *</label>
+                                            <select id="plataforma" required>
+                                                <option value="Whatsapp">Whatsapp</option>
+                                                <option value="Instagram">Instagram</option>
+                                                <option value="Tiktok">Tiktok</option>
+                                                <option value="Página Web">Página Web</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>🚚 Guía de Envío</label>
+                                        <input type="text" id="guia" placeholder="Número de guía...">
+                                    </div>
+                                </div>
+                                <button type="submit" id="btnSubmit" class="btn btn-primary"
+                                    style="margin-top: 15px;">Registrar Venta</button>
+                                <button type="button" id="btnCancelEdit" class="btn btn-cancel" style="display:none;"
+                                    onclick="cancelarEdicion()">Cancelar Edición</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="export-import-container"
+                        style="display:grid; gap:8px; margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
+                        <button class="btn btn-outline" onclick="exportarVentas()">📥 Exportar Backup</button>
+                        <button class="btn btn-outline" onclick="document.getElementById('importV').click()">📤 Importar
+                            Backup</button>
+                        <input type="file" id="importV" accept=".csv" style="display:none;"
+                            onchange="importarVentas(this)">
+                    </div>
+                </div>
+            </aside>
+            <main>
+                <div class="stats-row"
+                    style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:20px;">
+                    <div class="glass-card" style="text-align:center; padding:15px;"><span
+                            style="font-size:9px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">
+                            Top Producto</span><br><span id="topP" style="font-size:16px; font-weight:800;">-</span>
+                    </div>
+                    <div class="glass-card" style="text-align:center; padding:15px;"><span
+                            style="font-size:9px; text-transform:uppercase; color:var(--text-muted); font-weight:700;"
+                            id="statTallaLabel">
+                            Top Talla</span><br><span id="topT" style="font-size:16px; font-weight:800;">-</span></div>
+                    <div class="glass-card" style="text-align:center; padding:15px;"><span
+                            style="font-size:9px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">
+                            Top Ciudad</span><br><span id="topC" style="font-size:16px; font-weight:800;">-</span></div>
+                </div>
+                <div class="glass-card">
+                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; flex-wrap: wrap;">
+                        <input type="text" id="search"
+                            placeholder="🔍 Buscar por prenda, cliente, estado, celular o cualquier dato..."
+                            style="flex:1; min-width: 250px;" onkeyup="refrescar()">
+                        <button class="btn btn-outline"
+                            style="border-color:#34a853; color:#34a853; width:auto; white-space:nowrap; padding: 8px 14px; font-size: 11px; margin-top:0;"
+                            onclick="sincronizarGoogleForms(event)">📋 Sincronizar ventas</button>
+                        <button id="btnEliminarSel" class="btn btn-outline"
+                            style="border-color:#ef4444; color:#ef4444; width:auto; white-space:nowrap; padding: 8px 14px; font-size: 11px; margin-top:0; display:none;"
+                            onclick="eliminarSeleccionados()">🗑️ Eliminar seleccionados</button>
+                        <button class="btn btn-primary"
+                            style="width:auto; white-space:nowrap; padding: 8px 14px; font-size: 11px; margin-top:0;"
+                            onclick="enviarProveedor(event)">📦 Enviar a proveedor</button>
+                    </div>
+                    <div class="table-window">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Sel.</th>
+                                    <th>Img</th>
+                                    <th>Prenda</th>
+                                    <th>Cliente / Info</th>
+                                    <th>Utilidad</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- EGRESOS -->
+        <section id="view-egresos" class="view dashboard-grid">
+            <aside>
+                <div class="glass-card">
+                    <h3 style="margin:0 0 15px 0; font-size:1rem;">Registrar Egreso</h3>
+                    <form id="egresoForm">
+                        <div class="form-group"><label>Categoría</label><select id="egresoCat" required>
+                                <option value="Materia Prima">Materia Prima</option>
+                                <option value="Empaque">Empaque</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Publicidad">Publicidad</option>
+                                <option value="Otros">Otros</option>
+                            </select></div>
+                        <div class="form-group"><label>Monto</label><input type="number" id="egresoMonto" required>
+                        </div>
+                        <div class="form-group"><label>Fecha</label><input type="date" id="egresoFecha" required></div>
+                        <div class="form-group"><label>Descripción</label><textarea id="egresoDesc"></textarea><button
+                                type="submit" class="btn btn-danger" style="margin-top:15px;">Guardar Gasto</button>
+                    </form>
+                </div>
+            </aside>
+            <main>
+                <div class="glass-card">
+                    <h3 style="margin:0 0 15px 0; font-size:1rem;">Historial de Gastos</h3>
+                    <div class="table-window">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Categoría</th>
+                                    <th>Descripción</th>
+                                    <th>Monto</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyEgresos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- REPORTES -->
+        <section id="view-stats" class="view">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap:24px;">
+                <div class="glass-card">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                        <h3 style="margin:0; font-size:0.9rem; text-transform:uppercase; color:var(--text-muted)">
+                            Rendimiento</h3>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <select id="rendimientoMetricFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                                onchange="renderTemporalStats()">
+                                <option value="ventas">💵 Ventas</option>
+                                <option value="utilidad">📈 Utilidad</option>
+                            </select>
+                            <select id="mesFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                                onchange="renderTemporalStats()">
+                                <option value="">📅 Mes Actual</option>
+                                <option value="0">Enero</option>
+                                <option value="1">Febrero</option>
+                                <option value="2">Marzo</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Mayo</option>
+                                <option value="5">Junio</option>
+                                <option value="6">Julio</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Septiembre</option>
+                                <option value="9">Octubre</option>
+                                <option value="10">Noviembre</option>
+                                <option value="11">Diciembre</option>
+                            </select>
+                            <select id="anoFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                                onchange="renderTemporalStats()">
+                                <option value="">📆 Todos los Años</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div
+                        style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:20px; text-align:center;">
+                        <div id="semDiv">7 DÍAS<br><span id="sSemV" style="font-weight:800;">$0</span></div>
+                        <div id="mesDiv">MES<br><span id="sMesV" style="font-weight:800;">$0</span></div>
+                        <div id="totDiv">TOTAL<br><span id="sTotalV" style="font-weight:800;">$0</span></div>
+                    </div>
+                    <div style="height:280px;"><canvas id="generalChart"></canvas></div>
+                </div>
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 style="margin:0; font-size:0.9rem; text-transform:uppercase; color:var(--text-muted)"
+                            id="geoTitle">
+                            Ciudades</h3>
+                        <select id="geoFilter" style="width:auto; font-size:11px; padding:6px 10px;"
+                            onchange="renderTemporalStats()">
+                            <option value="ciudad">🏙️ Por Ciudad</option>
+                            <option value="pais">🌎 Por País</option>
+                        </select>
+                    </div>
+                    <div style="height:320px;"><canvas id="cityChart"></canvas></div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:1rem;">Análisis por Prenda</h3><select id="prendaFilter"
+                        style="width:250px;" onchange="renderTemporalStats()"></select>
+                </div>
+                <div style="height:280px;"><canvas id="productChart"></canvas></div>
+            </div>
+            <div class="glass-card" style="margin-top:24px;">
+                <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:1rem;">Análisis por Plataforma</h3><select id="plataformaFilter"
+                        style="width:250px;" onchange="renderTemporalStats()">
+                        <option value="">Todas</option>
+                        <option value="Whatsapp">Whatsapp</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Tiktok">Tiktok</option>
+                        <option value="Página Web">Página Web</option>
+                    </select>
+                </div>
+                <div style="height:280px;"><canvas id="plataformaChart"></canvas></div>
+            </div>
+        </section>
+
+        <!-- CLIENTES -->
+        <section id="view-clientes" class="view">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                <h3 style="margin:0;">💎 Ranking de Lealtad (Mejores Clientes)</h3>
+                <div style="position:relative; width:300px; max-width:100%;">
+                    <input type="text" id="clientSearch" placeholder="🔍 Buscar por nombre, ciudad o teléfono..."
+                        oninput="renderLealtad()"
+                        style="width:100%; padding:10px 14px 10px 38px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text-main); font-size:0.85rem; outline:none; transition:border 0.3s;">
+                    <span
+                        style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:16px; opacity:0.5;">🔍</span>
+                </div>
+            </div>
+            <div id="loyaltyList" class="loyalty-grid"></div>
+        </section>
+
+        <!-- VISTA CALENDARIO -->
+        <section id="view-calendario" class="view">
+            <div class="dashboard-header"
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+                <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+                    <button class="btn btn-outline" onclick="changeMonth(-1)"
+                        style="width:auto; padding:5px 12px; margin:0; border-radius:50%; font-size:10px;">◀</button>
+                    <div style="text-align:center;">
+                        <h2 id="calendarMonthTitle" style="margin:0; font-size:1.1rem; min-width:140px;">Junio 2026</h2>
+                        <p style="color:var(--text-muted); font-size:12px; margin:2px 0 0 0;">Planificación y Métricas
+                        </p>
+                    </div>
+                    <button class="btn btn-outline" onclick="changeMonth(1)"
+                        style="width:auto; padding:5px 12px; margin:0; border-radius:50%; font-size:10px;">▶</button>
+                </div>
+                <button class="btn btn-primary" onclick="openCalendarModal()"
+                    style="width:auto; margin:0; padding:10px 20px;">+ Nueva Publicación</button>
+            </div>
+
+            <div class="calendar-wrapper">
+                <div class="calendar-weekdays">
+                    <div class="weekday-label">Dom</div>
+                    <div class="weekday-label">Lun</div>
+                    <div class="weekday-label">Mar</div>
+                    <div class="weekday-label">Mié</div>
+                    <div class="weekday-label">Jue</div>
+                    <div class="weekday-label">Vie</div>
+                    <div class="weekday-label">Sáb</div>
+                </div>
+                <div class="calendar-grid" id="mainCellsContainer"></div>
+            </div>
+        </section>
+
+        <!-- MODAL DE TARJETA DE LEALTAD (ESTILO WALLET) -->
+        <div id="loyaltyOverlay" class="loyalty-card-overlay" onclick="closeLoyalty(event)">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:15px; max-width:100%;">
+                <div class="loyalty-card-modal animated-entry" id="walletCard" onclick="event.stopPropagation()">
+                    <button class="close-loyalty" onclick="closeLoyalty()">×</button>
+                    <div class="wallet-card-container">
+                        <img src="/wallet_card.jpg" id="walletBgImg" class="wallet-bg-img" alt="Monos Club Card">
+                        <div class="wallet-overlay-layer">
+                            <div id="loyaltyGrid" class="loyalty-stamps-grid">
+                                <!-- 10 Puntos -->
+                            </div>
+                            <div class="wallet-footer-overlay">
+                                <div class="wallet-client-name" id="loyaltyClientName">CLIENTE</div>
+                                <div id="loyaltyAlert" class="loyalty-status-msg">
+                                    <span id="loyaltyCountText">0</span> / 10 PUNTOS ACUMULADOS
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-download-wallet" onclick="downloadLoyaltyCard(); event.stopPropagation();">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Descargar Tarjeta para Cliente
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL CALENDARIO -->
+        <div id="calendarModalMask" class="calendar-modal-mask" onclick="closeCalendarModal(event)">
+            <div class="calendar-modal animated-entry" onclick="event.stopPropagation()">
+                <div class="calendar-modal-header">
+                    <h3 id="calModalTitle" style="margin:0; font-size:1.2rem;">Nueva Publicación</h3>
+                    <button onclick="closeCalendarModal()"
+                        style="background:none; border:none; font-size:28px; cursor:pointer; color:var(--text-muted); line-height:1;">×</button>
+                </div>
+                <form id="calendarForm">
+                    <input type="hidden" id="calPostId" value="">
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Título del
+                            Contenido</label>
+                        <input type="text" id="calTitle" placeholder="Ej. Lanzamiento Nueva Colección" required
+                            style="width:100% !important;">
+                    </div>
+                    <div class="form-row"
+                        style="margin-bottom:15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <div class="form-group">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Plataforma</label>
+                            <select id="calPlatform" required style="width:100% !important;">
+                                <option value="instagram">Instagram</option>
+                                <option value="tiktok">TikTok</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Tipo</label>
+                            <select id="calType" required style="width:100% !important;">
+                                <option value="post">Post</option>
+                                <option value="story">Historia</option>
+                                <option value="reel">Reel</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Días</label>
+                            <select id="calDay" multiple required
+                                style="width:100% !important; min-height: 45px;"></select>
+                            <small style="font-size: 9px; display: block; margin-top: 2px;">(Ctrl+Click)</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="display:block; margin-bottom:5px; font-weight:700; font-size:0.85rem;">Métricas</label>
+                        <div class="calendar-metrics-grid">
+                            <div class="metric-input-group"><small
+                                    style="font-size:10px; display:block; margin-bottom:4px; opacity:0.7;">👁️
+                                    Vistas</small><input type="number" id="calViews" value="0"></div>
+                            <div class="metric-input-group"><small
+                                    style="font-size:10px; display:block; margin-bottom:4px; opacity:0.7;">❤️
+                                    Likes</small><input type="number" id="calLikes" value="0"></div>
+                            <div class="metric-input-group"><small
+                                    style="font-size:10px; display:block; margin-bottom:4px; opacity:0.7;">💬
+                                    Coms</small><input type="number" id="calComments" value="0"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:25px;">
+                        <button type="button" class="btn" onclick="eliminarPost()"
+                            style="flex:1; background:#f4f4f4; color:var(--danger); border:1px solid #eee;">🗑️
+                            Borrar</button>
+                        <button type="submit" class="btn btn-primary" style="flex:2; font-weight:800;">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dbVentas = [], dbEgresos = [];
+        let charts = { general: null, product: null, city: null, plataforma: null };
+        let fotoTemp = null, editingId = null;
+        let sessionInfo = { store: 'monos' };
+        let calState = {
+            viewMonth: new Date().getMonth(),
+            viewYear: new Date().getFullYear(),
+            posts: []
+        };
+
+        // --- SESSION & BRANDING ---
+        async function initBranding() {
+            try {
+                const res = await fetch('/api/session');
+                sessionInfo = await res.json();
+
+                const isVinilos = sessionInfo.store === 'vinilos';
+                const title = isVinilos ? 'Ventas RedKat' : 'Ventas Monos';
+                const logo = isVinilos ? '/logo_vinilos.png' : '/Logo.png';
+
+                document.title = title;
+                document.getElementById('headerTitle').innerText = title;
+                document.getElementById('headerLogo').src = logo;
+
+                if (isVinilos) {
+                    // Color Rojo
+                    document.documentElement.style.setProperty('--primary', '#ef4444');
+                    document.documentElement.style.setProperty('--primary-rgb', '239, 68, 68');
+
+                    // Etiquetas
+                    document.getElementById('statTallaLabel').innerText = 'Top Formato';
+                }
+
+                // Update favicon
+                const favicon = document.querySelector('link[rel="icon"]');
+                if (favicon) favicon.href = logo;
+
+                // Initialize dynamic garments form
+                initGarmentsForm();
+            } catch (err) {
+                console.error("Error identifying session:", err);
+            }
+        }
+        initBranding();
+
+        // URL centralizada de Google Forms y Webhook Proveedor (se cargan al iniciar)
+        let _formsUrl = '';
+        let _webhookUrl = '';
+
+        // --- DB MOTOR CENTRALIZADO ---
+        async function cargarDatos() {
+            try {
+                const res = await fetch('/api/data');
+                const data = await res.json();
+                dbVentas = data.ventas || [];
+                dbEgresos = data.egresos || [];
+                calState.posts = data.posts || [];
+                refrescar();
+                renderEgresos();
+                renderLealtad();
+                renderCalendario();
+                // Cargar URL de Forms desde el servidor al iniciar (solo si no está ya cargada)
+                if (!_formsUrl) {
+                    try {
+                        const confRes = await fetch('/api/config/forms-url');
+                        const confData = await confRes.json();
+                        if (confData.success && confData.formsUrl) {
+                            _formsUrl = confData.formsUrl;
+                        }
+                    } catch (e) { }
+                }
+                // Cargar URL de Webhook desde el servidor al iniciar
+                if (!_webhookUrl) {
+                    try {
+                        const wRes = await fetch('/api/config/webhook-url');
+                        const wData = await wRes.json();
+                        if (wData.success && wData.webhookUrl) {
+                            _webhookUrl = wData.webhookUrl;
+                        }
+                    } catch (e) { }
+                }
+            } catch (err) {
+                console.error("Error cargando DB:", err);
+                showToast("Error de conexión con el servidor");
+            }
+        }
+        cargarDatos();
+
+        function switchTab(tab) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`view-${tab}`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if (tab === 'stats') renderTemporalStats();
+            if (tab === 'clientes') renderLealtad();
+            renderCalendario();
+            if (tab === 'calendario') renderCalendario();
+        }
+
+        function normalizar(t) { return t ? t.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : ""; }
+
+        // --- AUTOCOMPLETAR CLIENTE ---
+        document.getElementById('cliente').addEventListener('input', function () {
+            const nombre = this.value.trim().toLowerCase();
+            if (!nombre) return;
+            const clienteExistente = dbVentas.find(v => v.cliente && v.cliente.toLowerCase() === nombre);
+            if (clienteExistente && !editingId) {
+                ['pais', 'ciudad', 'cedula', 'telefono', 'email', 'direccion'].forEach(campo => {
+                    const el = document.getElementById(campo);
+                    if (el && clienteExistente[campo] && !el.value) {
+                        el.value = clienteExistente[campo];
+                    }
+                });
+            }
+        });
+
+        // --- DYNAMIC TEMPLATES ---
+        function initGarmentsForm() {
+            const container = document.getElementById('garmentsContainer');
+            if (container) {
+                container.innerHTML = '';
+                createGarmentBlock();
+            }
+            const addBtn = document.getElementById('btnAddGarment');
+            if (addBtn) addBtn.style.display = 'block';
+        }
+
+        function updateGarmentHeaders() {
+            const container = document.getElementById('garmentsContainer');
+            const blocks = container.querySelectorAll('.garment-block');
+            blocks.forEach((block, index) => {
+                const headerText = block.querySelector('strong');
+                if (headerText) {
+                    headerText.innerText = `Prenda / Producto #${index + 1}`;
+                }
+                const removeBtn = block.querySelector('.btn-remove-garment');
+                if (removeBtn) {
+                    removeBtn.style.display = blocks.length === 1 ? 'none' : 'block';
+                }
+            });
+        }
+
+        function createGarmentBlock(garmentData = null) {
+            const container = document.getElementById('garmentsContainer');
+            const blockIndex = container.children.length + 1;
+
+            const block = document.createElement('div');
+            block.className = 'garment-block';
+            block.style.border = '1px solid var(--border)';
+            block.style.borderRadius = '12px';
+            block.style.padding = '15px';
+            block.style.marginBottom = '15px';
+            block.style.background = 'var(--bg)';
+
+            const isVinilos = sessionInfo.store === 'vinilos';
+            const tallaLabel = isVinilos ? 'Formato *' : 'Talla *';
+
+            const headerHtml = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong style="font-size: 12px; color: var(--primary);">Prenda / Producto #${blockIndex}</strong>
+                    <button type="button" class="btn-remove-garment" style="background: none; border: none; color: var(--danger); font-weight: 700; cursor: pointer; font-size: 11px;">⚠️ Quitar</button>
+                </div>
+            `;
+
+            let optionsHtml = '';
+            if (isVinilos) {
+                optionsHtml = `
+                    <option value="Vinilo">Vinilo</option>
+                    <option value="CD">CD</option>
+                    <option value="Cassette">Cassette</option>
+                `;
+            } else {
+                optionsHtml = `
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="XXL">XXL</option>
+                    <option value="Única">Única</option>
+                    <option value="Bolso">Bolso</option>
+                    <option value="Accesorio">Accesorio</option>
+                    <option value="Maquillaje">Maquillaje</option>
+                `;
+            }
+
+            block.innerHTML = `
+                ${headerHtml}
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Producto *</label>
+                    <input type="text" class="garment-producto" list="listaProd" required placeholder="Nombre..." value="${garmentData ? garmentData.producto : ''}">
+                </div>
+                <div class="form-row" style="margin-bottom: 10px;">
+                    <div class="form-group">
+                        <label>${tallaLabel}</label>
+                        <select class="garment-talla" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Foto</label>
+                        <input type="file" class="garment-foto-file" accept="image/*" style="font-size: 11px;">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom: 10px;">
+                    <div class="form-group">
+                        <label>Costo *</label>
+                        <input type="number" class="garment-costo" required placeholder="$0" value="${garmentData ? garmentData.costo : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Venta *</label>
+                        <input type="number" class="garment-venta" required placeholder="$0" value="${garmentData ? garmentData.valor : ''}">
+                    </div>
+                </div>
+                <div class="garment-photo-preview" style="width: 100%; height: 100px; border: 1px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--card); margin-top: 10px;">
+                    <span style="font-size: 10px; color: var(--text-muted);" class="garment-photo-label">Sin Foto</span>
+                </div>
+            `;
+
+            const tallaSelect = block.querySelector('.garment-talla');
+            tallaSelect.innerHTML = optionsHtml;
+            if (garmentData && garmentData.talla) {
+                tallaSelect.value = garmentData.talla;
+            }
+
+            const fileInput = block.querySelector('.garment-foto-file');
+            const previewContainer = block.querySelector('.garment-photo-preview');
+            let blockFoto = garmentData ? garmentData.foto : null;
+
+            if (blockFoto && blockFoto !== 'https://via.placeholder.com/50') {
+                previewContainer.innerHTML = `<img src="${blockFoto}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            }
+
+            fileInput.onchange = (e) => {
+                if (e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = async (ev) => {
+                        const compressed = await compressImage(ev.target.result);
+                        previewContainer.innerHTML = `<img src="${compressed}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                        block.dataset.foto = compressed;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            };
+
+            if (blockFoto) {
+                block.dataset.foto = blockFoto;
+            }
+
+            const removeBtn = block.querySelector('.btn-remove-garment');
+            removeBtn.onclick = () => {
+                block.remove();
+                updateGarmentHeaders();
+            };
+
+            container.appendChild(block);
+            updateGarmentHeaders();
+        }
+
+        // --- GESTIÓN VENTAS ---
+        document.getElementById('ventaForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('btnSubmit');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Guardando...";
+
+            try {
+                const garmentBlocks = document.querySelectorAll('.garment-block');
+                if (garmentBlocks.length === 0) {
+                    showToast("Agrega al menos una prenda");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalText;
+                    return;
+                }
+
+                const commonData = {
+                    fecha: document.getElementById('fecha').value,
+                    pais: document.getElementById('pais').value.trim(),
+                    ciudad: document.getElementById('ciudad').value.trim(),
+                    plataforma: document.getElementById('plataforma').value,
+                    cliente: document.getElementById('cliente').value.trim(),
+                    cedula: document.getElementById('cedula').value.trim(),
+                    telefono: document.getElementById('telefono').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    direccion: document.getElementById('direccion').value.trim(),
+                    envio: document.getElementById('envio').value,
+                    guia: document.getElementById('guia').value.trim()
+                };
+
+                const baseId = Date.now();
+                let idx = 0;
+
+                for (let block of garmentBlocks) {
+                    const prodNombre = block.querySelector('.garment-producto').value.trim();
+                    const blockFoto = block.dataset.foto || null;
+
+                    let finalFoto = blockFoto;
+                    if (!finalFoto) {
+                        const existente = dbVentas.find(v => normalizar(v.producto) === normalizar(prodNombre) && v.foto && v.foto !== "https://via.placeholder.com/50");
+                        if (existente) finalFoto = existente.foto;
+                    }
+
+                    const data = {
+                        id: editingId && garmentBlocks.length === 1 ? editingId : (baseId + idx),
+                        fecha: commonData.fecha,
+                        producto: prodNombre,
+                        talla: block.querySelector('.garment-talla').value,
+                        pais: commonData.pais,
+                        ciudad: commonData.ciudad,
+                        plataforma: commonData.plataforma,
+                        cliente: commonData.cliente,
+                        cedula: commonData.cedula,
+                        telefono: commonData.telefono,
+                        email: commonData.email,
+                        direccion: commonData.direccion,
+                        envio: commonData.envio,
+                        guia: commonData.guia,
+                        costo: parseFloat(block.querySelector('.garment-costo').value) || 0,
+                        valor: parseFloat(block.querySelector('.garment-venta').value) || 0,
+                        foto: finalFoto || "https://via.placeholder.com/50",
+                        estado: editingId && garmentBlocks.length === 1 ? dbVentas.find(x => x.id === editingId).estado : "pendiente"
+                    };
+
+                    await fetch('/api/ventas', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (blockFoto) {
+                        for (let v of dbVentas) {
+                            if (v.id !== data.id && normalizar(v.producto) === normalizar(prodNombre) && v.foto !== blockFoto) {
+                                v.foto = blockFoto;
+                                await fetch('/api/ventas', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(v)
+                                });
+                            }
+                        }
+                    }
+                    idx++;
+                }
+
+                cancelarEdicion();
+                await cargarDatos();
+                showToast("¡Registro guardado y sincronizado!");
+            } catch (err) {
+                console.error("Error guardando venta:", err);
+                showToast("Error al guardar registro");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+            }
+        };
+
+        function refrescar() {
+            const q = normalizar(document.getElementById('search').value);
+            const sorted = [...dbVentas].sort((a, b) => {
+                if (a.estado === 'cambio' && b.estado !== 'cambio') return -1;
+                if (a.estado !== 'cambio' && b.estado === 'cambio') return 1;
+                return new Date(b.fecha) - new Date(a.fecha) || b.id - a.id;
+            });
+            const filtrados = sorted.filter(v => `${v.producto} ${v.cliente} ${v.ciudad} ${v.estado} ${v.cedula || ''} ${v.email || ''} ${v.telefono} ${v.pais || ''} ${v.plataforma || ''} ${v.direccion || ''} ${v.talla} ${v.guia || ''}`.toLowerCase().includes(q));
+
+            const clientDateCounts = {};
+            dbVentas.forEach(v => {
+                const clientKey = v.cliente ? v.cliente.toLowerCase().trim() : "";
+                const dateKey = v.fecha || "";
+                if (clientKey && dateKey) {
+                    const key = `${clientKey}_${dateKey}`;
+                    clientDateCounts[key] = (clientDateCounts[key] || 0) + 1;
+                }
+            });
+
+            const labelT = sessionInfo.store === 'vinilos' ? 'Formato' : 'Talla';
+            document.getElementById('tbody').innerHTML = filtrados.map(v => {
+                const clientKey = v.cliente ? v.cliente.toLowerCase().trim() : "";
+                const dateKey = v.fecha || "";
+                const key = `${clientKey}_${dateKey}`;
+                const hasMultiple = clientDateCounts[key] > 1;
+                let rowClass = 'data-row';
+                if (v.estado === 'cambio') {
+                    rowClass += ' row-cambio';
+                } else if (hasMultiple) {
+                    rowClass += ' multiple-items';
+                }
+
+                return `
+                <tr class="${rowClass}">
+                    <td data-label="Sel."><input type="checkbox" class="proveedor-checkbox" value="${v.id}" data-id="${v.id}" style="width:18px; height:18px; accent-color: var(--primary); cursor:pointer;" onchange="this.closest('tr').classList.toggle('selected', this.checked); const anyChecked = document.querySelectorAll('.proveedor-checkbox:checked').length > 0; const btn = document.getElementById('btnEliminarSel'); if(btn) btn.style.display = anyChecked ? 'block' : 'none';"></td>
+                    <td data-label="Img"><img src="${v.foto}" class="img-mini" onclick="previewImg(this.src)"></td>
+                    <td data-label="Prenda"><strong>${v.producto}</strong><br><small>${v.talla} • ${v.fecha ? v.fecha.split('-').reverse().join('/') : ''}</small></td>
+                    <td data-label="Cliente"><strong>${v.cliente}</strong> <small>(${v.cedula || 'S/N'})</small><br><small>${v.telefono} - ${v.email || '-'}</small><br><small>${v.plataforma || '-'} • ${v.ciudad}, ${v.pais || '-'}</small><br><small style="color:var(--text-muted); font-style:italic;">📍 ${v.direccion || 'Sin dirección'}</small><br><small style="color:var(--primary); font-weight:800;">📦 Envío: ${v.envio || 'Por defecto'}</small>${v.guia ? `<br><small style="color:var(--success); font-weight:700;">🚚 Guía: ${v.guia}</small>` : ''}</td>
+                    <td data-label="Utilidad" style="color:var(--success); font-weight:700;">$${(v.valor - v.costo).toLocaleString()}</td>
+                    <td data-label="Estado">
+                        <select class="status-select st-${v.estado}" onchange="cambiarEstado(${v.id}, this.value)">
+                            <option value="pendiente" ${v.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                            <option value="enviado" ${v.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
+                            <option value="entregado" ${v.estado === 'entregado' ? 'selected' : ''}>Entregado</option>
+                            <option value="cambio" ${v.estado === 'cambio' ? 'selected' : ''}>Cambio</option>
+                        </select>
+                    </td>
+                    <td data-label="Acciones">
+                        <div style="display:flex; gap:5px;">
+                            <button style="border:none; background:var(--bg); padding:8px; border-radius:6px; cursor:pointer;" onclick="prepararEdicion(${v.id})">✏️</button>
+                            <button style="border:none; background:var(--bg); padding:8px; border-radius:6px; cursor:pointer;" onclick="eliminarVenta(${v.id})">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+
+            const getUniqueOrdersCount = (list) => {
+                const uniqueKeys = new Set();
+                list.forEach(v => {
+                    const clientKey = v.cliente ? v.cliente.toLowerCase().trim() : "";
+                    const dateKey = v.fecha || "";
+                    uniqueKeys.add(`${clientKey}_${dateKey}`);
+                });
+                return uniqueKeys.size;
+            };
+            document.getElementById('countTop').innerText = (q === "") ? getUniqueOrdersCount(dbVentas) : getUniqueOrdersCount(filtrados);
+
+            // ACTUALIZAR SUGERENCIAS (DATALISTS)
+            const prodU = [...new Set(dbVentas.map(v => v.producto).filter(Boolean))].sort();
+            const ciuU = [...new Set(dbVentas.map(v => v.ciudad).filter(Boolean))].sort();
+            const paisU = [...new Set(dbVentas.map(v => v.pais).filter(Boolean))].sort();
+            const cliU = [...new Set(dbVentas.map(v => v.cliente).filter(Boolean))].sort();
+
+            const datalistProd = document.getElementById('listaProd');
+            if (datalistProd) datalistProd.innerHTML = prodU.map(p => `<option value="${p}">`).join('');
+
+            const datalistCiu = document.getElementById('listaCiudades');
+            if (datalistCiu) datalistCiu.innerHTML = ciuU.map(c => `<option value="${c}">`).join('');
+
+            const datalistPais = document.getElementById('listaPaises');
+            if (datalistPais) datalistPais.innerHTML = paisU.map(p => `<option value="${p}">`).join('');
+
+            const datalistCli = document.getElementById('listaClientes');
+            if (datalistCli) datalistCli.innerHTML = cliU.map(c => `<option value="${c}">`).join('');
+
+            const prendaFilter = document.getElementById('prendaFilter');
+            if (prendaFilter) prendaFilter.innerHTML = '<option value="">Filtrar prenda...</option>' + prodU.map(p => `<option value="${p}">${p}</option>`).join('');
+
+            const baseDataSet = filtrados.length ? filtrados : dbVentas;
+            const counts = baseDataSet.reduce((a, v) => {
+                if (v.producto) a.p[v.producto] = (a.p[v.producto] || 0) + 1;
+                if (v.talla) a.t[v.talla] = (a.t[v.talla] || 0) + 1;
+                if (v.ciudad) a.c[v.ciudad] = (a.c[v.ciudad] || 0) + 1;
+                return a;
+            }, { p: {}, t: {}, c: {} });
+
+            const getTopKey = (o) => {
+                const keys = Object.keys(o);
+                if (!keys.length) return "-";
+                return keys.reduce((a, b) => o[a] >= o[b] ? a : b);
+            };
+
+            document.getElementById('topP').innerText = getTopKey(counts.p);
+            document.getElementById('topT').innerText = getTopKey(counts.t);
+            document.getElementById('topC').innerText = getTopKey(counts.c);
+        }
+
+        function prepararEdicion(id) {
+            editingId = id; const v = dbVentas.find(x => x.id === id); if (!v) return;
+            const container = document.getElementById('garmentsContainer');
+            if (container) {
+                container.innerHTML = '';
+                createGarmentBlock(v);
+            }
+            const addBtn = document.getElementById('btnAddGarment');
+            if (addBtn) addBtn.style.display = 'none';
+
+            const removeBtn = container.querySelector('.btn-remove-garment');
+            if (removeBtn) removeBtn.style.display = 'none';
+
+            ['pais', 'ciudad', 'plataforma', 'cliente', 'cedula', 'telefono', 'email', 'direccion', 'envio', 'guia', 'fecha'].forEach(k => {
+                const el = document.getElementById(k);
+                if (el) el.value = v[k] || "";
+            });
+            document.getElementById('btnSubmit').innerText = "Actualizar Venta";
+            document.getElementById('btnCancelEdit').style.display = "flex";
+            if (document.getElementById('ventaCollapsible')) {
+                document.getElementById('ventaCollapsible').classList.remove('collapsed');
+                document.getElementById('view-ventas').classList.remove('aside-collapsed');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleVentaForm() {
+            const body = document.getElementById('ventaCollapsible');
+            body.classList.toggle('collapsed');
+            if (window.innerWidth > 768) {
+                const view = document.getElementById('view-ventas');
+                if (body.classList.contains('collapsed')) {
+                    view.classList.add('aside-collapsed');
+                } else {
+                    view.classList.remove('aside-collapsed');
+                }
+            }
+        }
+
+        function cancelarEdicion() {
+            editingId = null; document.getElementById('ventaForm').reset();
+            document.getElementById('btnSubmit').innerText = "Registrar Venta";
+            document.getElementById('btnCancelEdit').style.display = "none";
+            initGarmentsForm();
+        }
+
+        async function eliminarVenta(id) {
+            if (confirm("¿Eliminar este registro permanentemente?")) {
+                await fetch('/api/ventas/' + id, { method: 'DELETE' });
+                cargarDatos();
+            }
+        }
+
+        async function cambiarEstado(id, n) {
+            const v = dbVentas.find(x => x.id === id);
+            if (v) {
+                v.estado = n;
+                await fetch('/api/ventas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(v) });
+                cargarDatos();
+            }
+        }
+
+        // --- LEALTAD (CON TARJETA DE 10 PUNTOS) ---
+        function renderLealtad() {
+            const searchInput = document.getElementById('clientSearch');
+            const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            const map = {};
+            dbVentas.forEach(v => {
+                const k = v.cliente.toLowerCase().trim();
+                const key = v.cedula ? `${k}_${v.cedula}` : k;
+                if (!map[key]) map[key] = { n: v.cliente, t: 0, dates: new Set(), tel: v.telefono, ciu: v.ciudad };
+                map[key].t += v.valor;
+                if (v.fecha) {
+                    map[key].dates.add(v.fecha);
+                }
+            });
+
+            let sorted = Object.values(map).sort((a, b) => b.t - a.t);
+
+            // Filtrar por búsqueda
+            if (q) {
+                sorted = sorted.filter(c =>
+                    (c.n || '').toLowerCase().includes(q) ||
+                    (c.ciu || '').toLowerCase().includes(q) ||
+                    (c.tel || '').toLowerCase().includes(q)
+                );
+            } // Ordenar por dinero invertido
+            document.getElementById('loyaltyList').innerHTML = sorted.map((c, i) => {
+                const pointsCount = c.dates.size;
+                const isFull = pointsCount >= 10;
+
+                let miniDots = "";
+                for (let j = 1; j <= 10; j++) {
+                    miniDots += `<div class="mini-dot ${j <= pointsCount ? 'filled' : ''}"></div>`;
+                }
+
+                const safeName = encodeURIComponent(c.n);
+
+                return `
+                <div class="client-card" onclick="openLoyalty(decodeURIComponent('${safeName}'), ${pointsCount})">
+                    <div class="client-rank">#${i + 1}</div>
+                    <strong>${c.n}</strong><br><small>${c.tel}</small>
+                    <div class="client-stat" style="margin-top:10px;"><span>Ciudad:</span><strong>${c.ciu}</strong></div>
+                    <div class="client-stat"><span>Pedidos:</span><strong class="${isFull ? 'full-loyalty-blink' : ''}">${pointsCount}</strong></div>
+                    <div class="client-stat"><span>Invertido:</span><strong>$${c.t.toLocaleString()}</strong></div>
+                    <div class="mini-progress-loyalty">
+                        ${miniDots}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function closeLoyalty(e) {
+            if (!e || e.target === document.getElementById('loyaltyOverlay') || !document.getElementById('walletCard').contains(e.target) && !e.target.closest('.btn-download-wallet')) {
+                document.getElementById('loyaltyOverlay').style.display = "none";
+            }
+        }
+
+        function openLoyalty(name, count) {
+            const isV = sessionInfo.store === 'vinilos';
+            const overlay = document.getElementById('loyaltyOverlay');
+            const card = document.getElementById('walletCard');
+
+            // Resetear alerta y contenido previo
+            const alertBox = document.getElementById('loyaltyAlert');
+            if (alertBox) alertBox.classList.remove('full-loyalty-blink');
+
+            // Forzar limpieza y visibilidad
+            overlay.style.display = "flex";
+            overlay.style.opacity = "1";
+            overlay.style.pointerEvents = "auto";
+
+            document.getElementById('loyaltyClientName').innerText = name.toUpperCase();
+
+            const grid = document.getElementById('loyaltyGrid');
+            grid.innerHTML = "";
+            for (let i = 1; i <= 10; i++) {
+                const point = document.createElement('div');
+                const isFilled = i <= count;
+                point.className = `wallet-dot-stamp ${isFilled ? 'filled' : 'empty'}`;
+                if (isFilled) {
+                    let stampImg = '/bana.png';
+                    let extraStyle = '';
+                    if (i === 5) {
+                        stampImg = '/Capa 3.png';
+                    } else if (i === 10) {
+                        stampImg = '/nnnb.png';
+                    } else {
+                        // La banana está dibujada corrida hacia arriba/derecha dentro de su propio lienzo,
+                        // así que la desplazamos para que quede centrada dentro del círculo blanco.
+                        extraStyle = 'transform: translate(-4px, 4px);';
+                    }
+
+                    point.innerHTML = `<img src="${encodeURI(stampImg)}" style="width:36px; height:36px; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3)); ${extraStyle}">`;
+                }
+                grid.appendChild(point);
+            }
+
+            if (count >= 10) {
+                alertBox.innerHTML = "¡TARJETA COMPLETADA! 🏆";
+                alertBox.classList.add('full-loyalty-blink');
+            } else {
+                alertBox.innerHTML = `<span id="loyaltyCountText">${count}</span> / 10 PUNTOS ACUMULADOS`;
+            }
+
+            // Reiniciar animación de entrada
+            card.classList.remove('animated-entry');
+            void card.offsetWidth;
+            card.className = 'loyalty-card-modal animated-entry';
+        }
+
+        async function downloadLoyaltyCard() {
+            const card = document.getElementById('walletCard');
+            const closeBtn = card.querySelector('.close-loyalty');
+            const name = document.getElementById('loyaltyClientName').innerText;
+
+            if (closeBtn) closeBtn.style.visibility = 'hidden';
+
+            try {
+                // html2canvas a veces falla con transformaciones CSS, las quitamos temporalmente
+                const originalTransform = card.style.transform;
+                card.style.transform = 'none';
+
+                const canvas = await html2canvas(card, {
+                    backgroundColor: null,
+                    scale: 2, // Bajamos escala para evitar problemas de memoria que bloqueen
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                });
+
+                card.style.transform = originalTransform;
+
+                const link = document.createElement('a');
+                link.download = `lealtad_${name.toLowerCase().replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (e) {
+                console.error("Error generating image:", e);
+                alert("Error al procesar la imagen.");
+            } finally {
+                if (closeBtn) closeBtn.style.visibility = 'visible';
+            }
+        }
+
+        // --- CALENDARIO DINÁMICO ---
+
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+        function changeMonth(offset) {
+            calState.viewMonth += offset;
+            if (calState.viewMonth < 0) { calState.viewMonth = 11; calState.viewYear--; }
+            if (calState.viewMonth > 11) { calState.viewMonth = 0; calState.viewYear++; }
+            renderCalendario();
+        }
+
+        function renderCalendario() {
+            const grid = document.getElementById('mainCellsContainer');
+            const daySelect = document.getElementById('calDay');
+            const title = document.getElementById('calendarMonthTitle');
+
+            grid.innerHTML = '';
+            daySelect.innerHTML = '';
+            if (title) title.innerText = `${monthNames[calState.viewMonth]} ${calState.viewYear}`;
+
+            const firstDay = new Date(calState.viewYear, calState.viewMonth, 1).getDay();
+            const daysInMonth = new Date(calState.viewYear, calState.viewMonth + 1, 0).getDate();
+
+            // 1. Organizar posts en segmentos por semana y calcular pistas (tracks)
+            const weeks = [];
+            let currentDayIdx = 0;
+            const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+            for (let w = 0; w < totalCells / 7; w++) {
+                const weekSegments = [];
+                const startOfNextWeek = (w + 1) * 7 - firstDay + 1;
+                const startOfThisWeek = w * 7 - firstDay + 1;
+
+                calState.posts.forEach(post => {
+                    if (Number(post.month) !== Number(calState.viewMonth) || Number(post.year) !== Number(calState.viewYear)) return;
+
+                    // Encontrar rangos de este post que caen en esta semana
+                    const inThisWeek = post.days.filter(d => d >= startOfThisWeek && d < startOfNextWeek).sort((a, b) => a - b);
+                    if (inThisWeek.length > 0) {
+                        // Agrupar consecutivos dentro de la semana
+                        let sub = [inThisWeek[0]];
+                        for (let i = 1; i < inThisWeek.length; i++) {
+                            if (inThisWeek[i] === inThisWeek[i - 1] + 1) sub.push(inThisWeek[i]);
+                            else {
+                                weekSegments.push({ post, days: sub });
+                                sub = [inThisWeek[i]];
+                            }
+                        }
+                        weekSegments.push({ post, days: sub });
+                    }
+                });
+
+                // Calcular pistas para evitar superposición en esta semana
+                const tracks = [];
+                weekSegments.sort((a, b) => a.days[0] - b.days[0] || b.days.length - a.days.length).forEach(seg => {
+                    let assigned = false;
+                    for (let t = 0; t < tracks.length; t++) {
+                        const overlap = tracks[t].some(s => s.days.some(d => seg.days.includes(d)));
+                        if (!overlap) { tracks[t].push(seg); seg.track = t; assigned = true; break; }
+                    }
+                    if (!assigned) { seg.track = tracks.length; tracks.push([seg]); }
+                });
+
+                weeks.push({
+                    index: w,
+                    tracksCount: Math.max(tracks.length, 1),
+                    segments: weekSegments
+                });
+            }
+
+            // 2. Configurar Grid dinámico
+            const gridTemplateRows = weeks.map(w => `minmax(140px, auto)`).join(' ');
+            grid.style.gridTemplateRows = gridTemplateRows;
+
+            // 3. Renderizar Celdas de Fondo
+            for (let b = 0; b < totalCells; b++) {
+                const row = Math.floor(b / 7) + 1;
+                const col = (b % 7) + 1;
+                const d = b - firstDay + 1;
+
+                const cell = document.createElement('div');
+                cell.className = (d > 0 && d <= daysInMonth) ? 'calendar-cell active-month' : 'calendar-cell blank-day';
+                cell.style.gridRow = row;
+                cell.style.gridColumn = col;
+
+                if (d > 0 && d <= daysInMonth) {
+                    cell.dataset.day = d;
+                    cell.innerHTML = `<span class="cell-number">${d}</span>`;
+                    cell.ondragover = (e) => { e.preventDefault(); cell.classList.add('drag-over'); };
+                    cell.ondragleave = () => cell.classList.remove('drag-over');
+                    cell.ondrop = onPostDrop;
+                    daySelect.innerHTML += `<option value="${d}">${monthNames[calState.viewMonth]} ${d}</option>`;
+                }
+                grid.appendChild(cell);
+            }
+
+            // 4. Renderizar Segmentos (Bloques Spanning)
+            weeks.forEach(week => {
+                week.segments.forEach(seg => {
+                    const firstD = seg.days[0];
+                    const col = (firstDay + firstD - 1) % 7 + 1;
+                    const row = week.index + 1;
+
+                    const card = buildPostCard(seg.post, firstD);
+                    card.style.gridRow = row;
+                    card.style.gridColumn = `${col} / span ${seg.days.length}`;
+
+                    // Ajuste vertical basado en la pista (track)
+                    card.style.marginTop = (35 + (seg.track * 55)) + 'px';
+                    card.style.marginRight = '5px';
+                    card.style.zIndex = "20";
+
+                    grid.appendChild(card);
+                });
+            });
+        }
+
+        function buildPostCard(p, currentDay) {
+            const card = document.createElement('div');
+            const fmt = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n;
+            card.className = `post-card ${p.platform}`;
+            card.draggable = true;
+            card.dataset.id = p.id;
+            card.dataset.fromDay = currentDay;
+
+            card.innerHTML = `
+                <div class="post-meta" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="platform-badge" style="background:${p.platform === 'instagram' ? '#e1306c' : '#000'}; padding: 2px 6px; border-radius:4px; color:white; font-size:8px; font-weight:900;">${p.platform.toUpperCase()}</span>
+                    <span style="font-size: 9px; opacity:0.9; font-weight:800; color:#334; text-transform:uppercase;">${p.type || 'post'}</span>
+                </div>
+                <div class="post-card-title" title="${p.title}">${p.title}</div>
+                <div class="post-metrics-summary" style="display:flex; gap:10px; font-size:10px; opacity:0.8; color:#334; font-weight:600;">
+                    <span>👁️ ${fmt(p.views)}</span>
+                    <span>❤️ ${fmt(p.likes)}</span>
+                </div>
+            `;
+
+            card.ondragstart = (e) => {
+                e.dataTransfer.setData('postId', p.id);
+                e.dataTransfer.setData('fromDay', currentDay);
+                setTimeout(() => card.style.opacity = '0.4', 0);
+            };
+            card.ondragend = () => card.style.opacity = '1';
+            card.onclick = (e) => { e.stopPropagation(); openCalendarModal(p); };
+            return card;
+        }
+
+        async function onPostDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('postId');
+            const fromDay = parseInt(e.dataTransfer.getData('fromDay'));
+            const toDay = parseInt(this.dataset.day);
+            const post = calState.posts.find(x => x.id === id);
+            if (post && toDay) {
+                const idx = post.days.indexOf(fromDay);
+                if (idx !== -1) {
+                    post.days[idx] = toDay;
+                    await fetch('/api/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(post) });
+                    renderCalendario();
+                    showToast("Fecha actualizada");
+                }
+            }
+        }
+
+        function openCalendarModal(post = null) {
+            const modal = document.getElementById('calendarModalMask');
+            const form = document.getElementById('calendarForm');
+            form.reset();
+            if (post) {
+                document.getElementById('calModalTitle').innerText = "Editar Publicación";
+                document.getElementById('calPostId').value = post.id;
+                document.getElementById('calTitle').value = post.title;
+                document.getElementById('calPlatform').value = post.platform;
+                document.getElementById('calType').value = post.type || "post";
+                document.getElementById('calViews').value = post.views || 0;
+                document.getElementById('calLikes').value = post.likes || 0;
+                document.getElementById('calComments').value = post.comments || 0;
+
+                const dSelect = document.getElementById('calDay');
+                Array.from(dSelect.options).forEach(opt => {
+                    opt.selected = post.days.includes(parseInt(opt.value));
+                });
+            } else {
+                document.getElementById('calModalTitle').innerText = "Nueva Publicación";
+                document.getElementById('calPostId').value = "";
+            }
+            modal.style.display = "flex";
+        }
+
+        function closeCalendarModal(e) {
+            if (!e || e.target === document.getElementById('calendarModalMask')) {
+                document.getElementById('calendarModalMask').style.display = "none";
+            }
+        }
+
+        document.getElementById('calendarForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('calPostId').value;
+            const selectedDays = Array.from(document.getElementById('calDay').selectedOptions).map(o => parseInt(o.value));
+
+            if (selectedDays.length === 0) return showToast("Selecciona al menos un día");
+
+            const data = {
+                id: id || "p" + Date.now(),
+                title: document.getElementById('calTitle').value,
+                platform: document.getElementById('calPlatform').value,
+                type: document.getElementById('calType').value,
+                days: selectedDays,
+                month: calState.viewMonth,
+                year: calState.viewYear,
+                views: parseInt(document.getElementById('calViews').value) || 0,
+                likes: parseInt(document.getElementById('calLikes').value) || 0,
+                comments: parseInt(document.getElementById('calComments').value) || 0
+            };
+
+            await fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            closeCalendarModal();
+            cargarDatos();
+            showToast("Calendario guardado");
+        };
+
+        async function eliminarPost() {
+            const id = document.getElementById('calPostId').value;
+            if (!id) return;
+            if (confirm("¿Eliminar esta publicación?")) {
+                await fetch('/api/posts/' + id, { method: 'DELETE' });
+                closeCalendarModal();
+                cargarDatos();
+                showToast("Publicación eliminada");
+            }
+        }
+
+        // --- REPORTES ---
+        function renderTemporalStats() {
+            if (!dbVentas.length) return;
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            const col = document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#0f172a';
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+
+            // Poblar selector de año dinámicamente
+            const anoFilterEl = document.getElementById('anoFilter');
+            if (anoFilterEl) {
+                const currentAnoVal = anoFilterEl.value;
+                const anosDisponibles = [...new Set(dbVentas.map(v => {
+                    const f = new Date(v.fecha + "T00:00:00");
+                    return f.getFullYear();
+                }).filter(Boolean))].sort((a, b) => b - a);
+
+                let anoHtml = '<option value="">📆 Todos los Años</option>';
+                anosDisponibles.forEach(y => {
+                    anoHtml += `<option value="${y}" ${currentAnoVal == y ? 'selected' : ''}>${y}</option>`;
+                });
+                anoFilterEl.innerHTML = anoHtml;
+            }
+
+            const mesFilterEl = document.getElementById('mesFilter');
+            const mesSelVal = mesFilterEl ? mesFilterEl.value : '';
+            const mesSel = mesSelVal !== '' ? parseInt(mesSelVal) : hoy.getMonth();
+            const anoSelVal = anoFilterEl ? anoFilterEl.value : '';
+
+            const mesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            let mesLabel = mesNombres[mesSel];
+            if (anoSelVal) mesLabel += ` ${anoSelVal}`;
+
+            const pSel = document.getElementById('prendaFilter').value;
+            const platSel = document.getElementById('plataformaFilter').value;
+            const geoSel = document.getElementById('geoFilter') ? document.getElementById('geoFilter').value : 'ciudad';
+
+            // Actualizar título de la gráfica geográfica
+            const geoTitleEl = document.getElementById('geoTitle');
+            if (geoTitleEl) geoTitleEl.innerText = geoSel === 'pais' ? 'Países' : 'Ciudades';
+
+            // Acumuladores: s=general, f=por prenda, plat=por plataforma
+            const s = { sV: 0, sG: 0, sE: 0, mV: 0, mG: 0, mE: 0, tV: 0, tG: 0, tE: 0 };
+            const f = { sV: 0, sG: 0, mV: 0, mG: 0, tV: 0, tG: 0 };
+            const plat = { sV: 0, sG: 0, mV: 0, mG: 0, tV: 0, tG: 0 };
+            const geoMap = {};
+
+            dbVentas.forEach(v => {
+                const fV = new Date(v.fecha + "T00:00:00");
+                const gan = v.valor - v.costo;
+                const diff = (hoy - fV) / 86400000;
+
+                const matchesMonth = fV.getMonth() === mesSel;
+                const matchesYear = !anoSelVal || fV.getFullYear() == anoSelVal;
+                const isSelectedPeriod = matchesMonth && matchesYear;
+                const isThisWeek = diff >= 0 && diff <= 7;
+
+                s.tV += v.valor; s.tG += gan;
+
+                const geoKey = (geoSel === 'pais' ? (v.pais || 'Otro') : (v.ciudad || 'Otra')).toUpperCase();
+                geoMap[geoKey] = (geoMap[geoKey] || 0) + 1;
+
+                if (isSelectedPeriod) { s.mV += v.valor; s.mG += gan; }
+                if (isThisWeek) { s.sV += v.valor; s.sG += gan; }
+
+                if (v.producto === pSel) {
+                    f.tV += v.valor; f.tG += gan;
+                    if (isSelectedPeriod) { f.mV += v.valor; f.mG += gan; }
+                    if (isThisWeek) { f.sV += v.valor; f.sG += gan; }
+                }
+                if (!platSel || v.plataforma === platSel) {
+                    plat.tV += v.valor; plat.tG += gan;
+                    if (isSelectedPeriod) { plat.mV += v.valor; plat.mG += gan; }
+                    if (isThisWeek) { plat.sV += v.valor; plat.sG += gan; }
+                }
+            });
+
+            dbEgresos.forEach(e => {
+                const fE = new Date(e.fecha + "T00:00:00");
+                const diff = (hoy - fE) / 86400000;
+                s.tE += e.monto;
+                const matchesMonth = fE.getMonth() === mesSel;
+                const matchesYear = !anoSelVal || fE.getFullYear() == anoSelVal;
+                if (matchesMonth && matchesYear) s.mE += e.monto;
+                if (diff >= 0 && diff <= 7) s.sE += e.monto;
+            });
+
+            // Actualizar tarjetas resumen (Doble métrica: Ventas o Utilidad)
+            const semDiv = document.getElementById('semDiv');
+            const mesDiv = document.getElementById('mesDiv');
+            const totDiv = document.getElementById('totDiv');
+
+            const metricSel = document.getElementById('rendimientoMetricFilter') ? document.getElementById('rendimientoMetricFilter').value : 'ventas';
+            const isUtilidad = metricSel === 'utilidad';
+
+            const semVal = isUtilidad ? (s.sG - s.sE) : s.sV;
+            const mesVal = isUtilidad ? (s.mG - s.mE) : s.mV;
+            const totVal = isUtilidad ? (s.tG - s.tE) : s.tV;
+
+            const formatVal = (val) => val < 0 ? `-$${Math.abs(val).toLocaleString()}` : `$${val.toLocaleString()}`;
+            const subLabel = isUtilidad ? '<span style="font-size:9px; opacity:0.75; display:block;">(UTILIDAD)</span>' : '<span style="font-size:9px; opacity:0.75; display:block;">(VENTAS)</span>';
+            const valColor = isUtilidad ? '#10b981' : 'var(--text-main)';
+
+            if (semDiv) semDiv.innerHTML = `7 DÍAS${subLabel}<span id="sSemV" style="font-weight:800; color:${valColor};">${formatVal(semVal)}</span>`;
+            if (mesDiv) mesDiv.innerHTML = `${mesLabel.toUpperCase()}${subLabel}<span id="sMesV" style="font-weight:800; color:${valColor};">${formatVal(mesVal)}</span>`;
+            if (totDiv) totDiv.innerHTML = `TOTAL${subLabel}<span id="sTotalV" style="font-weight:800; color:${valColor};">${formatVal(totVal)}</span>`;
+
+            // Gráfico general - label central usa el mes seleccionado
+            const barLabels = ['7 Días', mesLabel, 'Total'];
+            if (charts.general) charts.general.destroy();
+            charts.general = new Chart(document.getElementById('generalChart'), {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [
+                        { label: 'Ventas', data: [s.sV, s.mV, s.tV], backgroundColor: primaryColor },
+                        { label: 'Utilidad', data: [(s.sG - s.sE), (s.mG - s.mE), (s.tG - s.tE)], backgroundColor: '#10b981' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: col },
+                            onClick: (e, legendItem, legend) => {
+                                Chart.defaults.plugins.legend.onClick(e, legendItem, legend);
+                                const ci = legend.chart;
+                                const vHidden = ci.getDatasetMeta(0).hidden;
+                                const uHidden = ci.getDatasetMeta(1).hidden;
+                                const rSelect = document.getElementById('rendimientoMetricFilter');
+                                if (rSelect) {
+                                    if (vHidden && !uHidden && rSelect.value !== 'utilidad') {
+                                        rSelect.value = 'utilidad';
+                                        renderTemporalStats();
+                                    } else if (!vHidden && uHidden && rSelect.value !== 'ventas') {
+                                        rSelect.value = 'ventas';
+                                        renderTemporalStats();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (charts.city) charts.city.destroy();
+            const geoKeys = Object.keys(geoMap); const geoVals = Object.values(geoMap);
+            charts.city = new Chart(document.getElementById('cityChart'), {
+                type: 'doughnut',
+                data: { labels: geoKeys, datasets: [{ data: geoVals, backgroundColor: [primaryColor, '#10b981', '#f59e0b', '#f43f5e', '#a855f7', '#06b6d4', '#ec4899'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: col } } } }
+            });
+
+            if (charts.product) charts.product.destroy();
+            charts.product = new Chart(document.getElementById('productChart'), {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [
+                        { label: 'Venta Prenda', data: [f.sV, f.mV, f.tV], backgroundColor: '#f59e0b' },
+                        { label: 'Utilidad Prenda', data: [f.sG, f.mG, f.tG], backgroundColor: '#10b981' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: col } } } }
+            });
+
+            if (charts.plataforma) charts.plataforma.destroy();
+            charts.plataforma = new Chart(document.getElementById('plataformaChart'), {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [
+                        { label: 'Venta por Plataforma', data: [plat.sV, plat.mV, plat.tV], backgroundColor: '#f43f5e' },
+                        { label: 'Utilidad por Plataforma', data: [plat.sG, plat.mG, plat.tG], backgroundColor: primaryColor }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: col } } } }
+            });
+        }
+
+        // --- OTROS ---
+        document.getElementById('egresoForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                id: Date.now(),
+                categoria: document.getElementById('egresoCat').value,
+                monto: parseFloat(document.getElementById('egresoMonto').value),
+                fecha: document.getElementById('egresoFecha').value,
+                desc: document.getElementById('egresoDesc').value
+            };
+            await fetch('/api/egresos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            document.getElementById('egresoForm').reset();
+            cargarDatos();
+            showToast("Egreso registrado");
+        };
+
+        function renderEgresos() { const sorted = [...dbEgresos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha)); document.getElementById('tbodyEgresos').innerHTML = sorted.map(e => `<tr class="data-row"><td data-label="Fecha"><small>${e.fecha}</small></td><td data-label="Categoría"><strong>${e.categoria}</strong></td><td data-label="Descripción"><small>${e.desc || '-'}</small></td><td data-label="Monto" style="color:var(--danger); font-weight:700;">$${e.monto.toLocaleString()}</td><td data-label="Acción"><button onclick="eliminarEgreso(${e.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td></tr>`).join(''); }
+
+        async function eliminarEgreso(id) {
+            if (confirm("¿Eliminar egreso?")) {
+                await fetch('/api/egresos/' + id, { method: 'DELETE' });
+                cargarDatos();
+            }
+        }
+
+        async function eliminarSeleccionados() {
+            const checks = document.querySelectorAll('.proveedor-checkbox:checked');
+            if (checks.length === 0) return showToast('Selecciona al menos un registro para eliminar');
+            if (!confirm(`¿Eliminar ${checks.length} registro(s) seleccionado(s)? Esta acción no se puede deshacer.`)) return;
+
+            const ids = Array.from(checks).map(c => c.dataset.id);
+            let eliminados = 0;
+            for (const id of ids) {
+                try {
+                    await fetch('/api/ventas/' + id, { method: 'DELETE' });
+                    eliminados++;
+                } catch (e) { }
+            }
+            await cargarDatos();
+            showToast(`${eliminados} registro(s) eliminado(s) correctamente`);
+        }
+
+        function exportarVentas() {
+            let csv = "ID,Fecha,Producto,Talla,Ciudad,Cliente,Telefono,Costo,Venta,Estado\n";
+            dbVentas.forEach(v => csv += `${v.id},${v.fecha},${v.producto},${v.talla},${v.ciudad},${v.cliente},${v.telefono},${v.costo},${v.valor},${v.estado}\n`);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            a.download = `backup_${sessionInfo.store}.csv`;
+            a.click();
+        }
+
+        async function enviarProveedor(evt) {
+            const checks = document.querySelectorAll('.proveedor-checkbox:checked');
+            if (checks.length === 0) return showToast('Selecciona al menos una prenda');
+
+            const storeKey = 'google_sheets_webhook_url_' + (sessionInfo.store || 'monos');
+            let sheetUrl = _webhookUrl || localStorage.getItem(storeKey) || localStorage.getItem('google_sheets_webhook_url') || '';
+
+            if (!sheetUrl || (evt && evt.shiftKey)) {
+                const nuevaUrl = prompt('Ingresa la URL del Webhook de Google Apps Script:', sheetUrl || '');
+                if (nuevaUrl) {
+                    sheetUrl = nuevaUrl.trim();
+                    _webhookUrl = sheetUrl;
+                    localStorage.setItem(storeKey, sheetUrl);
+                    localStorage.setItem('google_sheets_webhook_url', sheetUrl);
+                    try {
+                        await fetch('/api/config/webhook-url', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ webhookUrl: sheetUrl })
+                        });
+                    } catch (e) { }
+                } else if (!sheetUrl) {
+                    return;
+                }
+            }
+
+            const itemsPayload = [];
+            const clientGroups = {};
+
+            checks.forEach(chk => {
+                const v = dbVentas.find(x => x.id == chk.value);
+                if (v) {
+                    const clientKey = (v.cliente || 'Sin nombre').trim().toLowerCase();
+                    if (!clientGroups[clientKey]) {
+                        clientGroups[clientKey] = {
+                            cliente: v.cliente || 'Sin nombre',
+                            telefono: v.telefono || 'N/A',
+                            direccion: v.direccion || 'N/A',
+                            ciudad: v.ciudad || 'N/A',
+                            envio: v.envio || 'Pago',
+                            guia: v.guia || '',
+                            prendas: [],
+                            fotos: []
+                        };
+                    }
+                    const labelTalla = sessionInfo.store === 'vinilos' ? 'Formato' : 'Talla';
+                    clientGroups[clientKey].prendas.push(`${v.producto || 'Sin producto'} (${labelTalla}: ${v.talla || 'N/A'})`);
+                    if (v.foto) clientGroups[clientKey].fotos.push(v.foto);
+                }
+            });
+
+            Object.values(clientGroups).forEach(group => {
+                let rawEnvio = (group.envio || 'Pago').toString().trim().toLowerCase();
+                let envioFormatted = rawEnvio.includes('contra') || rawEnvio.includes('entrega')
+                    ? 'Envio Contraentrega'
+                    : 'Envio Pago';
+
+                itemsPayload.push({
+                    prendaTalla: group.prendas.join(" \n+ "),
+                    nombre: group.cliente,
+                    telefono: group.telefono,
+                    direccion: group.direccion,
+                    ciudad: group.ciudad,
+                    envio: envioFormatted,
+                    guia: group.guia,
+                    foto: group.fotos.join(" \n") || '',
+                    imagen: group.fotos.join(" \n") || '',
+                    imagenUrl: group.fotos.join(" \n") || ''
+                });
+            });
+
+            try {
+                showToast('Enviando a Google Sheets...');
+
+                const resp = await fetch('/api/enviar-proveedor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: itemsPayload, sheetUrl: sheetUrl })
+                });
+
+                if (resp.status === 401 || resp.redirected) {
+                    showToast('Sesión expirada. Por favor vuelve a iniciar sesión.');
+                    return;
+                }
+
+                const resData = await resp.json();
+                if (resp.ok && resData.success) {
+                    showToast('¡Petición enviada a Google Sheets correctamente!');
+                } else {
+                    showToast('Error de envío: ' + (resData.error || 'No se pudo procesar la petición'));
+                }
+            } catch (err) {
+                console.error('Error enviando a Google Sheets:', err);
+                showToast('Error de red al conectar con el servidor');
+            }
+        }
+
+        async function sincronizarGoogleForms(evt) {
+            // Usar URL en memoria (cargada al inicio) o fallback a localStorage
+            let csvUrl = _formsUrl;
+
+            if (!csvUrl) {
+                const storeKey = 'google_forms_csv_url_' + (sessionInfo.store || 'monos');
+                csvUrl = localStorage.getItem(storeKey) || localStorage.getItem('google_forms_csv_url') || '';
+            }
+
+            // Solo pedir URL si no existe en ningún lado, o si el usuario hace Shift+Clic para cambiarla
+            if (!csvUrl || (evt && evt.shiftKey)) {
+                const nuevaUrl = prompt('Ingresa la URL del enlace de Google Sheets publicado como CSV:\n(Archivo -> Compartir -> Publicar en la web -> CSV)', csvUrl || '');
+                if (nuevaUrl) {
+                    csvUrl = nuevaUrl.trim();
+                    _formsUrl = csvUrl; // actualizar variable global
+                    const storeKey = 'google_forms_csv_url_' + (sessionInfo.store || 'monos');
+                    localStorage.setItem(storeKey, csvUrl);
+                    localStorage.setItem('google_forms_csv_url', csvUrl);
+
+                    // Guardar en el servidor para todos los dispositivos
+                    try {
+                        await fetch('/api/config/forms-url', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ formsUrl: csvUrl })
+                        });
+                    } catch (eServer) { }
+                } else if (!csvUrl) {
+                    return;
+                }
+            }
+
+            try {
+                showToast('Descargando respuestas de Google Forms...');
+                const res = await fetch(csvUrl);
+                if (!res.ok) throw new Error('No se pudo descargar el CSV');
+                const text = await res.text();
+
+                // Parser CSV sencillo respetando comillas
+                const parseCSV = (str) => {
+                    const arr = [];
+                    let quote = false;
+                    let row = [''];
+                    for (let c of str) {
+                        if (c === '"') {
+                            quote = !quote;
+                        } else if (c === ',' && !quote) {
+                            row.push('');
+                        } else if ((c === '\r' || c === '\n') && !quote) {
+                            if (c === '\n') {
+                                arr.push(row);
+                                row = [''];
+                            }
+                        } else {
+                            row[row.length - 1] += c;
+                        }
+                    }
+                    if (row.length > 1 || row[0] !== '') arr.push(row);
+                    return arr;
+                };
+
+                const rows = parseCSV(text);
+                if (rows.length < 2) return showToast('El archivo CSV no contiene registros');
+
+                const headers = rows[0].map(h => h.trim().toUpperCase());
+
+                // Mapeo exacto solicitado por el usuario:
+                // NOMBRE COMPLETO -> CLIENTE
+                // TELEFONO -> TELEFONO
+                // DIRECCION -> DIRECCION
+                // PAIS -> PAIS
+                // CIUDAD -> CIUDAD
+                // EMAIL -> EMAIL
+                // CEDULA -> CEDULA
+                // PRENDA -> PRODUCTO
+                // TALLA -> TALLA
+                // ENVIO -> ENVIO
+                // DONDE REALIZASTE LA COMPRA -> PLATAFORMA
+
+                const getIdx = (keys) => headers.findIndex(h => keys.some(k => h.includes(k)));
+
+                const idxTimestamp = getIdx(['MARCA TEMPORAL', 'FECHA', 'TIMESTAMP']);
+                const idxCliente = getIdx(['NOMBRE COMPLETO', 'NOMBRE', 'CLIENTE']);
+                const idxTelefono = getIdx(['TELEFONO', 'TELÉFONO', 'CELULAR']);
+                const idxDireccion = getIdx(['DIRECCION', 'DIRECCIÓN']);
+                const idxPais = getIdx(['PAIS', 'PAÍS']);
+                const idxCiudad = getIdx(['CIUDAD', 'MUNICIPIO']);
+                const idxEmail = getIdx(['EMAIL', 'CORREO']);
+                const idxCedula = getIdx(['CEDULA', 'CÉDULA', 'IDENTIFICACION']);
+                const idxPrenda = getIdx(['PRENDA', 'PRODUCTO']);
+                const idxTalla = getIdx(['TALLA', 'FORMATO']);
+                const idxEnvio = getIdx(['ENVIO', 'ENVÍO', 'METODO DE ENVIO']);
+                const idxPlataforma = getIdx(['DONDE REALIZASTE LA COMPRA', 'PLATAFORMA', 'COMPRA']);
+
+                const getIdxExact = (key) => headers.findIndex(h => h === key.trim().toUpperCase());
+
+                // Indices para PRENDA 2, 3, 4, 5 y sus tallas
+                const prendaIdxs = [
+                    { prenda: idxPrenda, talla: idxTalla },
+                    { prenda: getIdxExact('PRENDA 2'), talla: getIdxExact('TALLA 2') },
+                    { prenda: getIdxExact('PRENDA 3'), talla: getIdxExact('TALLA 3') },
+                    { prenda: getIdxExact('PRENDA 4'), talla: getIdxExact('TALLA 4') },
+                    { prenda: getIdxExact('PRENDA 5'), talla: getIdxExact('TALLA 5') },
+                ];
+
+                // Funciones para homologar Envío y Plataforma desde el Sheet
+                const homologarEnvio = (raw) => {
+                    if (!raw) return 'Pago';
+                    const norm = normalizar(raw.trim());
+                    if (norm.includes('contra') || norm.includes('entrega')) return 'Contraentrega';
+                    return 'Pago';
+                };
+
+                const homologarPlataforma = (raw) => {
+                    if (!raw) return 'Página Web';
+                    const norm = normalizar(raw.trim());
+                    if (norm.includes('insta') || norm.includes('ig')) return 'Instagram';
+                    if (norm.includes('whats') || norm.includes('wpp') || norm.includes('wa')) return 'Whatsapp';
+                    if (norm.includes('tik') || norm.includes('tok')) return 'Tiktok';
+                    if (norm.includes('web') || norm.includes('pag') || norm.includes('sitio')) return 'Página Web';
+                    const str = raw.trim();
+                    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+                };
+
+                // Función para parsear MARCA TEMPORAL al formato YYYY-MM-DD
+                const parseFecha = (raw) => {
+                    if (!raw) return new Date().toISOString().split('T')[0];
+                    // Google Forms: "17/08/2026 9:15:10" o "2026/08/17 9:15:10"
+                    const partes = raw.trim().split(/[\s,]+/)[0];
+                    const separador = partes.includes('/') ? '/' : '-';
+                    const trozos = partes.split(separador);
+                    if (trozos.length === 3) {
+                        // Si primer trozo tiene 4 dígitos es YYYY-MM-DD
+                        if (trozos[0].length === 4) return `${trozos[0]}-${trozos[1].padStart(2, '0')}-${trozos[2].padStart(2, '0')}`;
+                        // Si último trozo tiene 4 dígitos es DD/MM/YYYY
+                        if (trozos[2].length === 4) return `${trozos[2]}-${trozos[1].padStart(2, '0')}-${trozos[0].padStart(2, '0')}`;
+                    }
+                    return new Date().toISOString().split('T')[0];
+                };
+
+                let creados = 0;
+                const baseId = Date.now();
+
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row || row.length === 0 || !row[0]) continue;
+
+                    const clienteVal = (idxCliente !== -1 && row[idxCliente]) ? row[idxCliente].trim() : 'Cliente Form';
+                    const telefonoVal = (idxTelefono !== -1 && row[idxTelefono]) ? row[idxTelefono].trim() : '';
+                    const tallaVal = (idxTalla !== -1 && row[idxTalla]) ? row[idxTalla].trim() : 'M';
+                    const fechaVal = parseFecha((idxTimestamp !== -1 && row[idxTimestamp]) ? row[idxTimestamp] : '');
+
+                    // Recopilar todas las prendas válidas de esta fila
+                    const prendasDeFila = [];
+                    prendaIdxs.forEach(({ prenda: pIdx, talla: tIdx }) => {
+                        if (pIdx !== -1 && row[pIdx] && row[pIdx].trim()) {
+                            prendasDeFila.push({
+                                producto: row[pIdx].trim(),
+                                talla: (tIdx !== -1 && row[tIdx] && row[tIdx].trim()) ? row[tIdx].trim() : 'M'
+                            });
+                        }
+                    });
+
+                    if (prendasDeFila.length === 0) continue;
+
+                    for (const { producto: prendaVal, talla: tallaItem } of prendasDeFila) {
+                        // Evitar duplicados: mismo cliente/teléfono + prenda + talla
+                        const yaExiste = dbVentas.some(v => {
+                            const mismoCliente = (v.cliente && clienteVal && normalizar(v.cliente) === normalizar(clienteVal)) ||
+                                (v.telefono && telefonoVal && v.telefono.replace(/\D/g, '') === telefonoVal.replace(/\D/g, ''));
+                            const mismaPrenda = v.producto && prendaVal && normalizar(v.producto) === normalizar(prendaVal);
+                            const mismaTalla = !v.talla || !tallaItem || normalizar(v.talla) === normalizar(tallaItem);
+                            return mismoCliente && mismaPrenda && mismaTalla;
+                        });
+                        if (yaExiste) continue;
+
+                        // Intentar herenar foto si existe para esa prenda
+                        let fotoVal = '';
+                        const prodNorm = normalizar(prendaVal);
+                        const fotoExistente = dbVentas.find(x => x.foto && x.foto.length > 50 && x.foto !== "https://via.placeholder.com/50" && normalizar(x.producto) === prodNorm);
+                        if (fotoExistente) fotoVal = fotoExistente.foto;
+
+                        // Asignar costo y valor según tipo de prenda
+                        let costoAuto = 0, valorAuto = 0;
+                        const pLower = prendaVal.toLowerCase().trim();
+                        if (pLower.startsWith('hoodie') || pLower.startsWith('hoddie') || pLower.startsWith('buzo')) {
+                            costoAuto = 85000; valorAuto = 130000;
+                        } else if (pLower.startsWith('camiseta') || pLower.startsWith('camisa') || pLower.startsWith('t-shirt') || pLower.startsWith('shirt')) {
+                            costoAuto = 41500; valorAuto = 75000;
+                        }
+
+                        const data = {
+                            id: Date.now() + Math.floor(Math.random() * 99999),
+                            fecha: fechaVal,
+                            producto: prendaVal,
+                            talla: tallaItem,
+                            pais: (idxPais !== -1 && row[idxPais]) ? row[idxPais].trim() : 'Colombia',
+                            ciudad: (idxCiudad !== -1 && row[idxCiudad]) ? row[idxCiudad].trim() : 'Bogotá',
+                            plataforma: homologarPlataforma((idxPlataforma !== -1 && row[idxPlataforma]) ? row[idxPlataforma] : ''),
+                            cliente: clienteVal,
+                            cedula: (idxCedula !== -1 && row[idxCedula]) ? row[idxCedula].trim() : '',
+                            telefono: telefonoVal,
+                            email: (idxEmail !== -1 && row[idxEmail]) ? row[idxEmail].trim() : '',
+                            direccion: (idxDireccion !== -1 && row[idxDireccion]) ? row[idxDireccion].trim() : '',
+                            envio: homologarEnvio((idxEnvio !== -1 && row[idxEnvio]) ? row[idxEnvio] : ''),
+                            guia: '',
+                            costo: costoAuto,
+                            valor: valorAuto,
+                            foto: fotoVal || "https://via.placeholder.com/50",
+                            estado: "pendiente"
+                        };
+
+                        await fetch('/api/ventas', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        creados++;
+                    }
+                }
+
+                await cargarDatos();
+                showToast(`¡Sincronización completada! ${creados} ventas agregadas.`);
+            } catch (err) {
+                console.error('Error sincronizando Google Forms:', err);
+                showToast('Error al procesar el archivo de Google Forms');
+            }
+        }
+
+        function importarVentas(input) {
+            if (!input.files[0]) return;
+            const r = new FileReader();
+            r.onload = async (e) => {
+                const rows = e.target.result.split('\n').filter(row => row.trim() !== "").slice(1);
+                for (let row of rows) {
+                    const c = row.split(',').map(s => s.trim());
+                    if (c.length >= 9) {
+                        const data = { id: parseInt(c[0]) || Date.now() + Math.random(), fecha: c[1], producto: c[2], talla: c[3], ciudad: c[4], cliente: c[5], telefono: c[6], costo: parseFloat(c[7]) || 0, valor: parseFloat(c[8]) || 0, estado: c[9] || "pendiente", foto: "https://via.placeholder.com/50" };
+                        await fetch('/api/ventas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                    }
+                }
+                cargarDatos();
+                showToast("Datos importados");
+            };
+            r.readAsText(input.files[0]);
+        }
+        function showToast(m) { const t = document.createElement('div'); t.className = 'toast'; t.innerText = m; document.getElementById('toast-container').appendChild(t); setTimeout(() => t.remove(), 2500); }
+        function previewImg(s) { document.getElementById('modalImg').src = s; document.getElementById('imgModal').style.display = 'flex'; }
+        async function compressImage(s) { return new Promise(res => { const i = new Image(); i.src = s; i.onload = () => { const c = document.createElement('canvas'); const m = 300; const sc = m / i.width; c.width = m; c.height = i.height * sc; c.getContext('2d').drawImage(i, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', 0.7)); }; }); }
+        function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('monos_theme', t); document.getElementById('themeBtn').innerText = t === 'dark' ? '☀️' : '🌙'; }
+        document.getElementById('themeBtn').onclick = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        applyTheme(localStorage.getItem('monos_theme') || 'light');
+    </script>
+</body>
+
+</html>

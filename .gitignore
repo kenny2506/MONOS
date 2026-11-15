@@ -1,0 +1,39 @@
+# Dependencias
+node_modules/
+package-lock.json
+
+# Entorno y Secretos
+.env
+.env.local
+.env.*.local
+.fernet_key.dev
+
+# Sesiones de WhatsApp (Credenciales y datos sensibles)
+whatsapp_sessions/
+*.session
+
+# Bases de datos SQLite y temporales locales
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Binarios descargados
+cloudflared.exe
+cloudflared_installer.msi
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Backups exportados
+backup_*.json
+backup_*.sql
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.ruff_cache/
