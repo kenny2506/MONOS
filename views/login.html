@@ -694,11 +694,20 @@
             // Read URL Params for Errors or Preselected Store
             const urlParams = new URLSearchParams(window.location.search);
             const errorType = urlParams.get('error');
+            const reason = urlParams.get('reason');
             const storeParam = urlParams.get('store') || localStorage.getItem('monos_login_store') || 'monos';
 
             selectStore(storeParam);
 
-            if (errorType) {
+            if (reason === 'inactivity') {
+                const errorBanner = document.getElementById('errorBanner');
+                const errorText = document.getElementById('errorText');
+                errorText.textContent = '🔒 Tu sesión se ha cerrado automáticamente por inactividad.';
+                errorBanner.style.display = 'flex';
+                errorBanner.style.borderColor = '#f59e0b';
+                errorBanner.style.background = 'rgba(245, 158, 11, 0.15)';
+                errorBanner.style.color = '#fbbf24';
+            } else if (errorType) {
                 const errorBanner = document.getElementById('errorBanner');
                 const errorText = document.getElementById('errorText');
 

@@ -19,14 +19,16 @@ app.use(compression({
     threshold: 512
 }));
 
-// Configuración de sesión
+// Configuración de sesión con cierre automático por inactividad (30 minutos)
 app.use(session({
     secret: 'monos-secret-key-2026',
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
+    rolling: true, // Renueva el tiempo de vida de la sesión con cada interacción activa del usuario
     cookie: {
         secure: false,
-        maxAge: 1000 * 60 * 60 * 24 // 1 día
+        httpOnly: true,
+        maxAge: 1000 * 60 * 30 // 30 minutos de inactividad
     }
 }));
 

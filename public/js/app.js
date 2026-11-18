@@ -904,6 +904,7 @@ function renderTemporalStats() {
 document.addEventListener('DOMContentLoaded', () => {
     initBranding();
     cargarDatos();
+    initInactivityTimeout(30); // Cierre automático por inactividad a los 30 minutos
     applyTheme(localStorage.getItem('monos_theme') || 'light');
     if (window.lucide) window.lucide.createIcons();
 
@@ -1499,4 +1500,63 @@ async function submitSmtpConfigForm(e) {
     } finally {
         if (submitBtn) submitBtn.disabled = false;
     }
+}
+
+// --- CIERRE DE SESIÓN POR INACTIVIDAD (30 MINUTOS) ---
+function initInactivityTimeout(minutes = 30) {
+    const timeoutMs = minutes * 60 * 1000;
+    let inactivityTimer = null;
+
+    function resetTimer() {
+        clearTimeout(inactivityTimer);
+        localStorage.setItem('monos_last_active', Date.now().toString());
+        inactivityTimer = setTimeout(triggerLogout, timeoutMs);
+    }
+
+    function triggerLogout() {
+        const lastActive = parseInt(localStorage.getItem('monos_last_active') || '0', 10);
+        const elapsed = Date.now() - lastActive;
+
+        // Si el usuario tuvo actividad en otra pestaña, extender el tiempo
+        if (elapsed < timeoutMs) {
+            inactivityTimer = setTimeout(triggerLogout, timeoutMs - elapsed);
+            return;
+        }
+
+        // Mostrar aviso antes de salir
+        showToast("🔒 Sesión expirada por inactividad");
+        setTimeout(() => {
+            window.location.href = '/logout?reason=inactivity';
+        }, 1200);
+    }
+
+    // Escuchar eventos de interacción humana
+    let lastThrottledTime = 0;
+    const userEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+
+    function handleActivity() {
+        const now = Date.now();
+        // Throttle a cada 15 segundos para no sobrecargar el navegador
+        if (now - lastThrottledTime > 15000) {
+            lastThrottledTime = now;
+            resetTimer();
+        }
+    }
+
+    userEvents.forEach(evt => {
+        window.addEventListener(evt, handleActivity, { passive: true });
+    });
+
+    // Iniciar temporizador base
+    resetTimer();
+
+    // Sincronizar actividad si el usuario tiene varias pestañas abiertas
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'monos_last_active') {
+            clearTimeout(inactivityTimer);
+            const elapsed = Date.now() - parseInt(e.newValue || '0', 10);
+            const remaining = Math.max(1000, timeoutMs - elapsed);
+            inactivityTimer = setTimeout(triggerLogout, remaining);
+        }
+    });
 }

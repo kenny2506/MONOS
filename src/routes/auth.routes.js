@@ -51,8 +51,14 @@ router.post(['/login', '/api/login'], async (req, res) => {
 
 // GET /logout
 router.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
+    const reason = req.query.reason;
+    req.session.destroy(() => {
+        if (reason) {
+            res.redirect(`/login?reason=${encodeURIComponent(reason)}`);
+        } else {
+            res.redirect('/login');
+        }
+    });
 });
 
 // GET /api/session
