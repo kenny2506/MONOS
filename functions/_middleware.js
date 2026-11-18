@@ -3,8 +3,8 @@ export async function onRequest(context) {
     const url = new URL(context.request.url);
     const pathname = url.pathname;
     
-    // Si se definió la variable BACKEND_URL en Cloudflare Pages, usarla; si no, usar el túnel activo o api.monosincorp.com
-    const backendHost = context.env.BACKEND_URL || 'https://jet-patches-excluded-dog.trycloudflare.com';
+    // Backend definitivo en Railway en la nube (24/7)
+    const backendHost = context.env.BACKEND_URL || 'https://monos-production-00e8bbed.up.railway.app';
 
     // 1. Interceptar POST /login y POST /login/ (procesar credenciales de acceso)
     if (context.request.method === 'POST' && (pathname === '/login' || pathname === '/login/')) {

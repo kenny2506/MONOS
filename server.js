@@ -51,6 +51,6 @@ app.get('/', isAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Servidor Multitienda corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor Multitienda corriendo en puerto ${PORT}`);
 });
