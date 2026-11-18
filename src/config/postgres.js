@@ -3,10 +3,11 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuración de conexión flexible: admite DATABASE_URL o variables individuales
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:dmRbIIvNKelZkXHQAkXjkGDvcLZkaISU@postgres.railway.internal:5432/railway';
 
-// En proveedores como Railway/Render, las URLs remotas suelen requerir SSL permissivo
-const isRemoteSSL = process.env.PGSSL === 'true' || (connectionString && process.env.PGSSL !== 'false');
+// En la red interna de Railway (railway.internal) no se usa SSL; para conexiones externas sí
+const isInternalRailway = connectionString && connectionString.includes('railway.internal');
+const isRemoteSSL = !isInternalRailway && (process.env.PGSSL === 'true' || (connectionString && process.env.PGSSL !== 'false'));
 
 const poolConfig = connectionString ? {
     connectionString,

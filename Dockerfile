@@ -22,5 +22,5 @@ COPY . .
 # Exponer el puerto del servidor
 EXPOSE 3020
 
-# Script de arranque: ejecuta migración de datos inicial y arranca el servidor
-CMD ["sh", "-c", "node migrate.js && node server.js"]
+# Script de arranque del servidor
+CMD ["sh", "-c", "node server.js"]
