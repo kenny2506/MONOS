@@ -1,3 +1,0 @@
-# Cloudflare Pages Redirects
-# Las redirecciones a dominios externos se gestionan via Pages Functions en /functions
-/login /login.html 200

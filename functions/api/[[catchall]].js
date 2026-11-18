@@ -1,10 +1,11 @@
 // Cloudflare Pages Function: Proxy inverso transparente para /api/*
 export async function onRequest(context) {
     const url = new URL(context.request.url);
-    const backendUrl = `https://api.monosincorp.com${url.pathname}${url.search}`;
+    const backendHost = context.env.BACKEND_URL || 'https://api.monosincorp.com';
+    const backendUrl = `${backendHost}${url.pathname}${url.search}`;
 
     const headers = new Headers(context.request.headers);
-    headers.set('Host', 'api.monosincorp.com');
+    headers.set('Host', new URL(backendHost).host);
     headers.set('X-Forwarded-Host', url.host);
     headers.set('X-Forwarded-Proto', url.protocol.replace(':', ''));
 
@@ -20,8 +21,21 @@ export async function onRequest(context) {
 
     try {
         const response = await fetch(backendUrl, init);
-        
         const resHeaders = new Headers(response.headers);
+
+        // Si el backend responde con redirect a /login (ej. no autenticado)
+        if (response.status >= 300 && response.status < 400) {
+            const loc = resHeaders.get('Location');
+            if (loc) {
+                try {
+                    const locUrl = new URL(loc, backendHost);
+                    resHeaders.set('Location', locUrl.pathname + locUrl.search);
+                } catch (e) {
+                    // Mantener
+                }
+            }
+        }
+
         return new Response(response.body, {
             status: response.status,
             statusText: response.statusText,
@@ -29,7 +43,7 @@ export async function onRequest(context) {
         });
     } catch (err) {
         return new Response(JSON.stringify({
-            error: 'No se pudo conectar con el servidor backend (api.monosincorp.com)',
+            error: `No se pudo conectar con el servidor backend (${backendHost})`,
             details: err.message
         }), {
             status: 502,

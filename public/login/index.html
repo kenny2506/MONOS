@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Administrativo · Gestor Multitienda MONOS INC</title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-dark: #07090e;
+            --card-bg: rgba(15, 20, 32, 0.75);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary-monos: #6366f1;
+            --glow-monos: rgba(99, 102, 241, 0.35);
+            --primary-redkat: #ef4444;
+            --glow-redkat: rgba(239, 68, 68, 0.35);
+            --primary-flores: #f43f5e;
+            --glow-flores: rgba(244, 63, 94, 0.35);
+            --primary-tenis: #0284c7;
+            --glow-tenis: rgba(2, 132, 199, 0.35);
+            --primary-vetpet: #10b981;
+            --glow-vetpet: rgba(16, 185, 129, 0.35);
+            --active-color: var(--primary-monos);
+            --active-glow: var(--glow-monos);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #f8fafc;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px 16px;
+        }
+
+        /* Gradient Glow Background Orbs */
+        .bg-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.45;
+            pointer-events: none;
+            transition: all 0.8s ease;
+            z-index: 0;
+        }
+
+        .bg-glow-1 {
+            width: 450px;
+            height: 450px;
+            background: var(--active-color);
+            top: -100px;
+            left: -100px;
+        }
+
+        .bg-glow-2 {
+            width: 400px;
+            height: 400px;
+            background: #a855f7;
+            bottom: -100px;
+            right: -100px;
+            opacity: 0.25;
+        }
+
+        /* Particle Canvas */
+        #particles-js {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Main Glass Card Wrapper */
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1050px;
+            display: grid;
+            grid-template-columns: 1fr;
+            border-radius: 28px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            transition: border-color 0.5s ease;
+        }
+
+        @media (min-width: 820px) {
+            .login-wrapper {
+                grid-template-columns: 1fr 1fr;
+                min-height: 600px;
+            }
+        }
+
+        /* Left Branding Hero Section */
+        .brand-section {
+            position: relative;
+            padding: 40px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.4) 100%);
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.6s ease;
+        }
+
+        @media (min-width: 820px) {
+            .brand-section {
+                border-bottom: none;
+                border-right: 1px solid var(--border-color);
+                padding: 48px;
+            }
+        }
+
+        .brand-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .system-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #e2e8f0;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulseDot 2s infinite;
+        }
+
+        @keyframes pulseDot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.85);
+            }
+        }
+
+        .brand-center {
+            margin: 40px 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo-glow-ring {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, var(--active-glow) 0%, transparent 70%);
+            margin-bottom: 24px;
+            position: relative;
+            transition: all 0.6s ease;
+        }
+
+        .brand-logo-img {
+            max-width: 140px;
+            max-height: 140px;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.4));
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            transition: color 0.4s ease;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+            max-width: 280px;
+            line-height: 1.5;
+        }
+
+        .brand-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Right Form Section */
+        .form-section {
+            padding: 36px 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @media (min-width: 820px) {
+            .form-section {
+                padding: 48px;
+            }
+        }
+
+        /* Store Tabs Switcher */
+        .store-selector-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .store-tabs {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 5px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 28px;
+        }
+
+        .store-tab-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 10px 4px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .store-tab-btn:hover {
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .store-tab-btn.active {
+            color: #ffffff;
+            background: var(--active-color);
+            box-shadow: 0 4px 14px var(--active-glow);
+        }
+
+        /* Form Controls */
+        .form-header {
+            margin-bottom: 24px;
+        }
+
+        .form-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .form-header p {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #64748b;
+            transition: color 0.3s ease;
+            pointer-events: none;
+            width: 18px;
+            height: 18px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 13px 16px 13px 44px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--active-color);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 4px var(--active-glow);
+        }
+
+        .form-input:focus~.input-icon {
+            color: var(--active-color);
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle-btn:hover {
+            color: #f1f5f9;
+        }
+
+        /* Error Banner */
+        .error-banner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-6px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(6px);
+            }
+        }
+
+        /* Submit Button */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: var(--active-color);
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px var(--active-glow);
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 10px 25px var(--active-glow);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .form-footer-note {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .form-footer-note strong {
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-glow bg-glow-1" id="bgGlow1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div id="particles-js"></div>
+
+    <div class="login-wrapper">
+        <!-- Panel Izquierdo: Branding dinámico según tienda -->
+        <div class="brand-section">
+            <div class="brand-top">
+                <div class="system-badge">
+                    <span class="status-dot"></span>
+                    <span>Sistema Operativo</span>
+                </div>
+                <span style="font-size: 11px; color: #64748b; font-weight: 700;">v2.5 · 2026</span>
+            </div>
+
+            <div class="brand-center">
+                <div class="logo-glow-ring" id="logoRing">
+                    <img src="/Logo.png" alt="Logo de Tienda" id="brandLogo" class="brand-logo-img">
+                </div>
+                <h1 class="brand-title" id="brandTitle">Ventas Monos</h1>
+                <p class="brand-subtitle" id="brandSubtitle">Gestor unificado de ventas, clientes, inventario y
+                    comunicación multimédica.</p>
+            </div>
+
+            <div class="brand-footer">
+                <span>© 2026 MONOS INC</span>
+                <span>Seguridad SSL 256-bit</span>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Formulario de Login -->
+        <div class="form-section">
+            <label class="store-selector-label">Unidad de Negocio / Tienda</label>
+            <div class="store-tabs">
+                <button type="button" class="store-tab-btn active" id="btn-monos" onclick="selectStore('monos')">
+                    <i data-lucide="shopping-bag" style="width:16px; height:16px;"></i>
+                    Monos
+                </button>
+                <button type="button" class="store-tab-btn" id="btn-redkat" onclick="selectStore('redkat')">
+                    <i data-lucide="flame" style="width:16px; height:16px;"></i>
+                    RedKat
+                </button>
+                <button type="button" class="store-tab-btn" id="btn-flores" onclick="selectStore('flores')">
+                    <i data-lucide="flower" style="width:16px; height:16px;"></i>
+                    Flores
+                </button>
+                <button type="button" class="store-tab-btn" id="btn-tenis" onclick="selectStore('tenis')">
+                    <i data-lucide="footprints" style="width:16px; height:16px;"></i>
+                    Tenis
+                </button>
+                <button type="button" class="store-tab-btn" id="btn-vetpet" onclick="selectStore('vetpet')">
+                    <i data-lucide="heart-pulse" style="width:16px; height:16px;"></i>
+                    VetPet
+                </button>
+            </div>
+
+            <div class="form-header">
+                <h2>Iniciar Sesión</h2>
+                <p id="formSubhead">Acceso autenticado a la tienda de Monos</p>
+            </div>
+
+            <!-- Caja de Mensaje de Error -->
+            <div class="error-banner" id="errorBanner">
+                <i data-lucide="alert-circle" style="width:18px; height:18px; flex-shrink:0;"></i>
+                <span id="errorText">Usuario o contraseña incorrectos.</span>
+            </div>
+
+            <form action="/login" method="POST" id="loginForm">
+                <input type="hidden" name="store" id="hiddenStoreInput" value="monos">
+
+                <div class="field-group">
+                    <label class="field-label" for="usernameInput">Usuario Autorizado</label>
+                    <div class="input-container">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input type="text" id="usernameInput" name="username" class="form-input"
+                            placeholder="Ingresa tu usuario" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="passwordInput">Contraseña de Acceso</label>
+                    <div class="input-container">
+                        <i data-lucide="lock" class="input-icon"></i>
+                        <input type="password" id="passwordInput" name="password" class="form-input"
+                            placeholder="••••••••••••" required autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()"
+                            title="Mostrar u ocultar contraseña">
+                            <i data-lucide="eye" id="eyeIcon" style="width:18px; height:18px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="btnSubmit">
+                    <span>Ingresar al Sistema</span>
+                    <i data-lucide="arrow-right" style="width:18px; height:18px;"></i>
+                </button>
+            </form>
+
+            <div class="form-footer-note">
+                Monos Inc Business Management Suite · <strong>Acceso Restringido</strong>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        const STORE_CONFIGS = {
+            monos: {
+                title: 'Ventas Monos',
+                subtitle: 'Gestor unificado de ventas, clientes, inventario y comunicación multimédica.',
+                logo: '/Logo.png',
+                color: '#6366f1',
+                glow: 'rgba(99, 102, 241, 0.35)',
+                subhead: 'Acceso autenticado al panel principal de Monos'
+            },
+            redkat: {
+                title: 'Ventas RedKat',
+                subtitle: 'Plataforma especializada para vinilos, diseño y personalización de prendas.',
+                logo: '/logo_vinilos.png',
+                color: '#ef4444',
+                glow: 'rgba(239, 68, 68, 0.35)',
+                subhead: 'Acceso autenticado al panel de RedKat'
+            },
+            flores: {
+                title: 'Ventas Flores',
+                subtitle: 'Gestión integral de arreglos, pedidos especiales y despachos florales.',
+                logo: '/logo_flores.png',
+                color: '#f43f5e',
+                glow: 'rgba(244, 63, 94, 0.35)',
+                subhead: 'Acceso autenticado al panel de Flores'
+            },
+            tenis: {
+                title: 'Ventas Tenis',
+                subtitle: 'Catálogo deportivo, calzado exclusivo y control de despacho.',
+                logo: '/logo_tenis.png',
+                color: '#0284c7',
+                glow: 'rgba(2, 132, 199, 0.35)',
+                subhead: 'Acceso autenticado al panel de Tenis'
+            },
+            vetpet: {
+                title: 'VetPet Veterinaria',
+                subtitle: 'Sistema de atención médica veterinaria, servicios y accesorios para mascotas.',
+                logo: '/logo_vetpet.svg',
+                color: '#10b981',
+                glow: 'rgba(16, 185, 129, 0.35)',
+                subhead: 'Acceso autenticado al panel de VetPet'
+            }
+        };
+
+        let currentStoreKey = 'monos';
+
+        function selectStore(storeKey) {
+            if (storeKey === 'vinilos') storeKey = 'redkat';
+            if (!STORE_CONFIGS[storeKey]) storeKey = 'monos';
+
+            currentStoreKey = storeKey;
+            const cfg = STORE_CONFIGS[storeKey];
+
+            // Update hidden form field
+            document.getElementById('hiddenStoreInput').value = storeKey;
+
+            // Update tabs active state
+            document.querySelectorAll('.store-tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-${storeKey}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Update CSS Root variables for active theme color
+            document.documentElement.style.setProperty('--active-color', cfg.color);
+            document.documentElement.style.setProperty('--active-glow', cfg.glow);
+
+            // Update branding text & elements
+            document.getElementById('brandTitle').textContent = cfg.title;
+            document.getElementById('brandSubtitle').textContent = cfg.subtitle;
+            document.getElementById('formSubhead').textContent = cfg.subhead;
+
+            const logoImg = document.getElementById('brandLogo');
+            logoImg.style.transform = 'scale(0.8) rotate(-10deg)';
+            logoImg.style.opacity = '0.3';
+
+            setTimeout(() => {
+                logoImg.src = cfg.logo;
+                logoImg.style.transform = 'scale(1) rotate(0deg)';
+                logoImg.style.opacity = '1';
+            }, 180);
+
+            // Save choice in localStorage
+            localStorage.setItem('monos_login_store', storeKey);
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('passwordInput');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // Particle background
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 50, "density": { "enable": true, "value_area": 900 } },
+                "color": { "value": "#ffffff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.15, "random": true },
+                "size": { "value": 2, "random": true },
+                "line_linked": { "enable": true, "distance": 130, "color": "#ffffff", "opacity": 0.08, "width": 1 },
+                "move": { "enable": true, "speed": 0.8, "direction": "none", "random": true, "out_mode": "out" }
+            },
+            "interactivity": {
+                "events": { "onhover": { "enable": true, "mode": "grab" } },
+                "mode": { "grab": { "distance": 120, "line_linked": { "opacity": 0.25 } } }
+            }
+        });
+
+        // Initialize Lucide Icons & Store Selection
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) window.lucide.createIcons();
+
+            // Read URL Params for Errors or Preselected Store
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorType = urlParams.get('error');
+            const storeParam = urlParams.get('store') || localStorage.getItem('monos_login_store') || 'monos';
+
+            selectStore(storeParam);
+
+            if (errorType) {
+                const errorBanner = document.getElementById('errorBanner');
+                const errorText = document.getElementById('errorText');
+
+                let msg = '⚠️ Usuario o contraseña incorrectos.';
+                if (errorType === 'user_not_found') {
+                    msg = '⚠️ El usuario ingresado no existe en esta tienda.';
+                } else if (errorType === 'wrong_store') {
+                    msg = '⚠️ El usuario existe pero no pertenece a la unidad seleccionada.';
+                } else if (errorType === 'wrong_password') {
+                    msg = '⚠️ La contraseña ingresada es incorrecta.';
+                }
+
+                errorText.textContent = msg;
+                errorBanner.style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+
+</html>
