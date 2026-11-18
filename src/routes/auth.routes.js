@@ -11,8 +11,8 @@ router.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', '..', 'views', 'login.html'));
 });
 
-// POST /login
-router.post('/login', async (req, res) => {
+// POST /login y /api/login (para evitar conflicto con archivos estáticos en Cloudflare)
+router.post(['/login', '/api/login'], async (req, res) => {
     try {
         const username = (req.body.username || '').trim();
         const password = (req.body.password || '').trim();
