@@ -5,22 +5,25 @@ const path = require('path');
 // Configuración de conexión flexible: admite DATABASE_URL o variables individuales
 const connectionString = process.env.DATABASE_URL;
 
+// En proveedores como Railway/Render, las URLs remotas suelen requerir SSL permissivo
+const isRemoteSSL = process.env.PGSSL === 'true' || (connectionString && process.env.PGSSL !== 'false');
+
 const poolConfig = connectionString ? {
     connectionString,
-    ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false,
+    ssl: isRemoteSSL ? { rejectUnauthorized: false } : false,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 10000,
 } : {
     host: process.env.PGHOST || 'localhost',
     port: parseInt(process.env.PGPORT || '5432', 10),
     user: process.env.PGUSER || 'postgres',
     password: process.env.PGPASSWORD || 'postgres',
     database: process.env.PGDATABASE || 'monos_db',
-    ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false,
+    ssl: isRemoteSSL ? { rejectUnauthorized: false } : false,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 10000,
 };
 
 const pool = new Pool(poolConfig);
