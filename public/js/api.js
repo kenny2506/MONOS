@@ -41,7 +41,19 @@ async function cargarDatos() {
 async function initBranding() {
     try {
         const res = await fetch('/api/session');
+        if (res.redirected && res.url.includes('/login')) {
+            window.location.href = '/login';
+            return;
+        }
+        if (!res.ok) {
+            window.location.href = '/login';
+            return;
+        }
         sessionInfo = await res.json();
+        if (!sessionInfo || !sessionInfo.user) {
+            window.location.href = '/login';
+            return;
+        }
 
         const isVinilos = sessionInfo.store === 'vinilos' || sessionInfo.store === 'redkat';
         const isFlores = sessionInfo.store === 'flores';

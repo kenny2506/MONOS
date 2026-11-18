@@ -1,5 +1,3 @@
-# Reglas de redirección / Proxy para Cloudflare Pages
-# Redirige las llamadas dinámicas al backend alojado en el servidor
-/api/*  https://api.monosincorp.com/api/:splat  200
-/login  https://api.monosincorp.com/login  200
-/logout https://api.monosincorp.com/logout 200
+# Cloudflare Pages Redirects
+# Las redirecciones a dominios externos se gestionan via Pages Functions en /functions
+/login /login.html 200
