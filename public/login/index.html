@@ -188,8 +188,8 @@
         }
 
         .logo-glow-ring {
-            width: 170px;
-            height: 170px;
+            width: 230px;
+            height: 230px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -201,10 +201,10 @@
         }
 
         .brand-logo-img {
-            max-width: 140px;
-            max-height: 140px;
+            max-width: 200px;
+            max-height: 200px;
             object-fit: contain;
-            filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.4));
+            filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.5));
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -451,17 +451,6 @@
         .btn-login:active {
             transform: translateY(0);
         }
-
-        .form-footer-note {
-            margin-top: 24px;
-            text-align: center;
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .form-footer-note strong {
-            color: #cbd5e1;
-        }
     </style>
 </head>
 
@@ -487,13 +476,10 @@
                     <img src="/Logo.png" alt="Logo de Tienda" id="brandLogo" class="brand-logo-img">
                 </div>
                 <h1 class="brand-title" id="brandTitle">Ventas Monos</h1>
-                <p class="brand-subtitle" id="brandSubtitle">Gestor unificado de ventas, clientes, inventario y
-                    comunicación multimédica.</p>
             </div>
 
             <div class="brand-footer">
                 <span>© 2026 MONOS INC</span>
-                <span>Seguridad SSL 256-bit</span>
             </div>
         </div>
 
@@ -564,10 +550,6 @@
                     <i data-lucide="arrow-right" style="width:18px; height:18px;"></i>
                 </button>
             </form>
-
-            <div class="form-footer-note">
-                Monos Inc Business Management Suite · <strong>Acceso Restringido</strong>
-            </div>
         </div>
     </div>
 
@@ -576,7 +558,7 @@
         const STORE_CONFIGS = {
             monos: {
                 title: 'Ventas Monos',
-                subtitle: 'Gestor unificado de ventas, clientes, inventario y comunicación multimédica.',
+                subtitle: '',
                 logo: '/Logo.png',
                 color: '#6366f1',
                 glow: 'rgba(99, 102, 241, 0.35)',
@@ -584,7 +566,7 @@
             },
             redkat: {
                 title: 'Ventas RedKat',
-                subtitle: 'Plataforma especializada para vinilos, diseño y personalización de prendas.',
+                subtitle: '',
                 logo: '/logo_vinilos.png',
                 color: '#ef4444',
                 glow: 'rgba(239, 68, 68, 0.35)',
@@ -592,7 +574,7 @@
             },
             flores: {
                 title: 'Ventas Flores',
-                subtitle: 'Gestión integral de arreglos, pedidos especiales y despachos florales.',
+                subtitle: '',
                 logo: '/logo_flores.png',
                 color: '#f43f5e',
                 glow: 'rgba(244, 63, 94, 0.35)',
@@ -600,7 +582,7 @@
             },
             tenis: {
                 title: 'Ventas Tenis',
-                subtitle: 'Catálogo deportivo, calzado exclusivo y control de despacho.',
+                subtitle: '',
                 logo: '/logo_tenis.png',
                 color: '#0284c7',
                 glow: 'rgba(2, 132, 199, 0.35)',
@@ -608,7 +590,7 @@
             },
             vetpet: {
                 title: 'VetPet Veterinaria',
-                subtitle: 'Sistema de atención médica veterinaria, servicios y accesorios para mascotas.',
+                subtitle: '',
                 logo: '/logo_vetpet.svg',
                 color: '#10b981',
                 glow: 'rgba(16, 185, 129, 0.35)',
@@ -639,7 +621,8 @@
 
             // Update branding text & elements
             document.getElementById('brandTitle').textContent = cfg.title;
-            document.getElementById('brandSubtitle').textContent = cfg.subtitle;
+            const subTitleEl = document.getElementById('brandSubtitle');
+            if (subTitleEl) subTitleEl.textContent = cfg.subtitle || '';
             document.getElementById('formSubhead').textContent = cfg.subhead;
 
             const logoImg = document.getElementById('brandLogo');
