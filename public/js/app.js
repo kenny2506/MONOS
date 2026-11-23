@@ -12,14 +12,38 @@ let _formsUrl = '';
 let _webhookUrl = '';
 
 // --- UI UTILS & HELPERS ---
-function showToast(m) {
+function showToast(m, showWhatsAppCopy = false) {
     const container = document.getElementById('toast-container');
     if (!container) return;
     const t = document.createElement('div');
     t.className = 'toast';
-    t.innerText = m;
+    t.style.display = 'flex';
+    t.style.flexDirection = 'column';
+    t.style.gap = '8px';
+    t.style.maxWidth = '380px';
+
+    const msgSpan = document.createElement('span');
+    msgSpan.innerText = m;
+    t.appendChild(msgSpan);
+
+    if (showWhatsAppCopy && lastOrderSummaryText) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerHTML = `<svg style="width:13px; height:13px; vertical-align:-2px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copiar resumen para WhatsApp`;
+        btn.style.cssText = 'padding:6px 10px; border-radius:8px; background:rgba(37,211,102,0.18); border:1px solid rgba(37,211,102,0.4); color:#25d366; font-size:11px; font-weight:700; cursor:pointer; text-align:center; transition:all 0.15s ease;';
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            copyWhatsAppSummary();
+        };
+        t.appendChild(btn);
+    }
+
     container.appendChild(t);
-    setTimeout(() => t.remove(), 2500);
+    setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => t.remove(), 300);
+    }, showWhatsAppCopy ? 8000 : 3000);
 }
 
 function getWhatsAppLink(phone) {
@@ -108,237 +132,1294 @@ function switchTab(tab) {
     if (tab === 'whatsapp' && typeof initWhatsAppTab === 'function') initWhatsAppTab();
 }
 
-// --- DYNAMIC GARMENTS FORM MANAGEMENT ---
-function initGarmentsForm() {
-    const container = document.getElementById('garmentsContainer');
-    if (container) {
-        container.innerHTML = '';
-        createGarmentBlock();
+// --- CONFIGURACIÓN MULTITIENDA PARA EL MODAL DE REGISTRO DE VENTAS V2 ---
+const STORE_ITEM_CONFIGS = {
+    monos: {
+        title: 'Ventas Monos',
+        cat1: 'Prenda / Ropa',
+        cat2: 'Accesorio / Otros',
+        clothingSizes: ['S', 'M', 'L', 'XL', 'XXL', 'Única'],
+        accTypes: ['Bufanda', 'Bolso', 'Maquillaje', 'Otro']
+    },
+    tenis: {
+        title: 'Ventas Tenis',
+        cat1: 'Calzado / Tenis',
+        cat2: 'Accesorio / Merch',
+        clothingSizes: ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', 'Única'],
+        accTypes: ['Medias', 'Cordones', 'Gorra', 'Otro']
+    },
+    flores: {
+        title: 'Ventas Flores',
+        cat1: 'Arreglo / Flores',
+        cat2: 'Complemento / Regalo',
+        clothingSizes: ['Ramo', 'Arreglo', 'Caja', 'Flor Suelta', 'Planta', 'Corona', 'Otro'],
+        accTypes: ['Chocolates', 'Peluche', 'Globo', 'Tarjeta', 'Vino', 'Otro']
+    },
+    redkat: {
+        title: 'Ventas RedKat',
+        cat1: 'Música / Formato',
+        cat2: 'Merch / Ropa',
+        clothingSizes: ['Vinilo', 'CD', 'Cassette', 'Edición Especial'],
+        accTypes: ['Camiseta', 'Gorra', 'Tote Bag', 'Poster', 'Otro']
+    },
+    vinilos: {
+        title: 'Ventas Vinilos',
+        cat1: 'Música / Formato',
+        cat2: 'Merch / Ropa',
+        clothingSizes: ['Vinilo', 'CD', 'Cassette', 'Edición Especial'],
+        accTypes: ['Camiseta', 'Gorra', 'Tote Bag', 'Poster', 'Otro']
+    },
+    vetpet: {
+        title: 'VetPet Veterinaria',
+        cat1: 'Servicio Médico',
+        cat2: 'Accesorio / Alimento',
+        clothingSizes: ['Consulta', 'Vacunación', 'Baño/Peluquería', 'Cirugía', 'Profilaxis', 'Otro'],
+        accTypes: ['Alimento', 'Juguete', 'Snack', 'Correa/Collar', 'Medicamento', 'Otro']
     }
-    const addBtn = document.getElementById('btnAddGarment');
-    if (addBtn) addBtn.style.display = 'block';
+};
+
+function getStoreItemConfig() {
+    const st = sessionInfo && sessionInfo.store ? sessionInfo.store.toLowerCase() : 'monos';
+    return STORE_ITEM_CONFIGS[st] || STORE_ITEM_CONFIGS.monos;
 }
 
-function updateGarmentHeaders() {
-    const container = document.getElementById('garmentsContainer');
-    if (!container) return;
-    const blocks = container.querySelectorAll('.garment-block');
-    blocks.forEach((block, index) => {
-        const headerText = block.querySelector('strong');
-        if (headerText) {
-            headerText.innerText = `Prenda / Producto #${index + 1}`;
-        }
-        const removeBtn = block.querySelector('.btn-remove-garment');
-        if (removeBtn) {
-            removeBtn.style.display = blocks.length === 1 ? 'none' : 'block';
+const MAIN_CITIES_LIST = [
+    'bogota', 'bogotá', 'medellin', 'medellín', 'cali', 'barranquilla',
+    'bucaramanga', 'cartagena', 'pereira', 'armenia', 'manizales',
+    'cucuta', 'cúcuta', 'ibague', 'ibagué', 'villavicencio', 'neiva',
+    'valledupar', 'santa marta', 'pasto', 'tunja', 'monteria', 'montería',
+    'popayan', 'popayán', 'sincelejo', 'chia', 'chía', 'soacha', 'envigado', 'rionegro'
+];
+
+let modalItems = [];
+let activePasteItemId = 1;
+let activeChannel = 'Whatsapp';
+let shippingMode = 'Pago'; // 'Pago' | 'Contraentrega'
+let lastOrderSummaryText = '';
+
+function formatCOP(amount) {
+    const val = Number(amount) || 0;
+    return '$ ' + val.toLocaleString('es-CO');
+}
+
+function escapeAttr(text) {
+    return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function selectChannel(channel) {
+    activeChannel = channel;
+    const platInput = document.getElementById('plataforma');
+    if (platInput) platInput.value = channel;
+
+    const channelGroup = document.getElementById('channelGroup');
+    if (!channelGroup) return;
+
+    channelGroup.querySelectorAll('.channel-pill').forEach(btn => {
+        const btnChan = btn.dataset.channel || btn.getAttribute('data-channel');
+        const isMatch = btnChan && btnChan.toLowerCase() === channel.toLowerCase();
+        btn.classList.remove('active-whatsapp', 'active-instagram', 'active-web', 'active-tiktok');
+        if (isMatch) {
+            if (channel.toLowerCase().includes('what')) btn.classList.add('active-whatsapp');
+            else if (channel.toLowerCase().includes('insta')) btn.classList.add('active-instagram');
+            else if (channel.toLowerCase().includes('web') || channel.toLowerCase().includes('página')) btn.classList.add('active-web');
+            else if (channel.toLowerCase().includes('tik')) btn.classList.add('active-tiktok');
         }
     });
 }
 
-function createGarmentBlock(garmentData = null) {
-    const container = document.getElementById('garmentsContainer');
-    if (!container) return;
-    const blockIndex = container.children.length + 1;
+function handlePhoneLookup(rawVal) {
+    const digits = String(rawVal || '').replace(/\D/g, '');
+    const badge = document.getElementById('frequentClientBadge');
 
-    const block = document.createElement('div');
-    block.className = 'garment-block';
-    block.style.border = '1px solid var(--border)';
-    block.style.borderRadius = '12px';
-    block.style.padding = '15px';
-    block.style.marginBottom = '15px';
-    block.style.background = 'var(--bg)';
+    if (digits.length >= 7 && Array.isArray(dbVentas) && dbVentas.length) {
+        const match = dbVentas.slice().reverse().find(v => {
+            const vDig = String(v.telefono || '').replace(/\D/g, '');
+            return vDig && (vDig.endsWith(digits) || digits.endsWith(vDig));
+        });
 
-    const isVinilos = sessionInfo.store === 'vinilos' || sessionInfo.store === 'redkat';
-    const isFlores = sessionInfo.store === 'flores';
-    const isTenis = sessionInfo.store === 'tenis';
+        if (match) {
+            const clienteEl = document.getElementById('cliente');
+            const cedulaEl = document.getElementById('cedula');
+            const emailEl = document.getElementById('email');
+            const paisEl = document.getElementById('pais');
+            const ciudadEl = document.getElementById('ciudad');
+            const direccionEl = document.getElementById('direccion');
 
-    let tallaLabel = 'Talla *';
-    if (isVinilos) tallaLabel = 'Formato *';
-    else if (isFlores) tallaLabel = 'Tipo *';
-    else if (isTenis) tallaLabel = 'Talla / N° *';
+            if (clienteEl && !clienteEl.value) clienteEl.value = match.cliente || '';
+            if (cedulaEl && !cedulaEl.value) cedulaEl.value = match.cedula || '';
+            if (emailEl && !emailEl.value) emailEl.value = match.email || '';
+            if (paisEl && match.pais) paisEl.value = match.pais;
+            if (ciudadEl && match.ciudad) ciudadEl.value = match.ciudad;
+            if (direccionEl && !direccionEl.value) direccionEl.value = match.direccion || '';
 
-    const headerHtml = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <strong style="font-size: 12px; color: var(--primary);">Prenda / Producto #${blockIndex}</strong>
-            <button type="button" class="btn-remove-garment" style="background: none; border: none; color: var(--danger); font-weight: 700; cursor: pointer; font-size: 11px;">⚠️ Quitar</button>
-        </div>
-    `;
-
-    let optionsHtml = '';
-    if (isVinilos) {
-        optionsHtml = `
-            <option value="Vinilo">Vinilo</option>
-            <option value="CD">CD</option>
-            <option value="Cassette">Cassette</option>
-            <option value="Merch">Merch</option>
-        `;
-    } else if (isFlores) {
-        optionsHtml = `
-            <option value="Ramo">Ramo</option>
-            <option value="Arreglo">Arreglo</option>
-            <option value="Caja">Caja</option>
-            <option value="Flor Suelta">Flor Suelta</option>
-            <option value="Planta">Planta</option>
-            <option value="Corona">Corona</option>
-            <option value="Otro">Otro</option>
-        `;
-    } else if (isTenis) {
-        optionsHtml = `
-            <option value="35">35</option>
-            <option value="36">36</option>
-            <option value="37">37</option>
-            <option value="38">38</option>
-            <option value="39">39</option>
-            <option value="40">40</option>
-            <option value="41">41</option>
-            <option value="42">42</option>
-            <option value="43">43</option>
-            <option value="44">44</option>
-            <option value="Única">Única</option>
-        `;
-    } else {
-        optionsHtml = `
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
-            <option value="Única">Única</option>
-            <option value="Bolso">Bolso</option>
-            <option value="Accesorio">Accesorio</option>
-            <option value="Maquillaje">Maquillaje</option>
-        `;
-    }
-
-    block.innerHTML = `
-        ${headerHtml}
-        <div class="form-group" style="margin-bottom: 10px;">
-            <label>Producto *</label>
-            <input type="text" class="garment-producto" list="listaProd" required placeholder="Nombre..." value="${garmentData ? garmentData.producto : ''}">
-        </div>
-        <div class="form-row" style="margin-bottom: 10px;">
-            <div class="form-group">
-                <label>${tallaLabel}</label>
-                <select class="garment-talla" required></select>
-            </div>
-            <div class="form-group">
-                <label>Foto</label>
-                <input type="file" class="garment-foto-file" accept="image/*" style="font-size: 11px;">
-            </div>
-        </div>
-        <div class="form-row" style="margin-bottom: 10px;">
-            <div class="form-group">
-                <label>Costo *</label>
-                <input type="number" class="garment-costo" required placeholder="$0" value="${garmentData ? garmentData.costo : ''}">
-            </div>
-            <div class="form-group">
-                <label>Venta *</label>
-                <input type="number" class="garment-venta" required placeholder="$0" value="${garmentData ? garmentData.valor : ''}">
-            </div>
-        </div>
-        <div class="form-group" style="margin-top: 10px;">
-            <label style="font-size: 11px; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 4px;">
-                <i data-lucide="alert-circle" class="lucide-sm"></i> Observación / Nota Especial
-            </label>
-            <textarea class="garment-observacion" placeholder="Escribe alguna observación o nota especial sobre la venta (opcional)..." style="width: 100%; height: 60px; border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 12px; background: var(--card); color: var(--text); resize: vertical;">${garmentData && garmentData.observacion ? garmentData.observacion : ''}</textarea>
-        </div>
-    `;
-
-    const tallaSelect = block.querySelector('.garment-talla');
-    tallaSelect.innerHTML = optionsHtml;
-    if (garmentData && garmentData.talla) {
-        tallaSelect.value = garmentData.talla;
-    }
-
-    const fileInput = block.querySelector('.garment-foto-file');
-    let blockFoto = garmentData ? garmentData.foto : null;
-
-    if (fileInput) {
-        fileInput.onchange = (e) => {
-            if (e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = async (ev) => {
-                    const compressed = await compressImage(ev.target.result);
-                    block.dataset.foto = compressed;
-                };
-                reader.readAsDataURL(e.target.files[0]);
+            if (badge) {
+                badge.style.display = 'inline-flex';
+                badge.textContent = `✓ Cliente frecuente: ${match.cliente || 'Detectado'}`;
             }
-        };
-    }
-
-    if (blockFoto) {
-        block.dataset.foto = blockFoto;
-    }
-
-    const removeBtn = block.querySelector('.btn-remove-garment');
-    removeBtn.onclick = () => {
-        block.remove();
-        updateGarmentHeaders();
-    };
-
-    container.appendChild(block);
-    updateGarmentHeaders();
-}
-
-function toggleVentaForm() {
-    const body = document.getElementById('ventaCollapsible');
-    body.classList.toggle('collapsed');
-    if (window.innerWidth > 768) {
-        const view = document.getElementById('view-ventas');
-        if (body.classList.contains('collapsed')) {
-            view.classList.add('aside-collapsed');
-        } else {
-            view.classList.remove('aside-collapsed');
+            evaluateShippingTariff(true);
+            return;
         }
     }
+    if (badge) badge.style.display = 'none';
+}
+
+function evaluateShippingTariff(autoSetValues = false) {
+    const countryEl = document.getElementById('clientCountry') || document.getElementById('pais');
+    const cityEl = document.getElementById('clientCity') || document.getElementById('ciudad');
+    const zoneBadge = document.getElementById('zoneIndicator');
+    const ruleCaption = document.getElementById('shippingRuleCaption');
+    const shippingInput = document.getElementById('shippingValue');
+    const realCostInput = document.getElementById('shippingRealCost');
+
+    if (!countryEl || !cityEl) return;
+
+    const country = countryEl.value;
+    const cityRaw = cityEl.value.trim().toLowerCase();
+
+    if (country !== 'Colombia') {
+        if (zoneBadge) {
+            zoneBadge.className = 'text-[10px] font-bold text-sky-400';
+            zoneBadge.textContent = 'Envío Internacional • Tarifa variable';
+        }
+        if (ruleCaption) ruleCaption.textContent = `Tarifa internacional (${country})`;
+        if (autoSetValues && shippingInput && realCostInput) {
+            shippingInput.value = 85000;
+            realCostInput.value = 72000;
+        }
+    } else {
+        const normalizedCity = cityRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const isMainCity = MAIN_CITIES_LIST.some(c =>
+            normalizedCity.includes(c.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
+        );
+
+        if (isMainCity) {
+            if (zoneBadge) {
+                zoneBadge.className = 'text-[10px] font-bold text-emerald-400';
+                zoneBadge.textContent = 'Ciudad Principal • $16.500';
+            }
+            if (ruleCaption) ruleCaption.textContent = 'Tarifa Ciudad Principal';
+            if (autoSetValues && shippingInput && realCostInput) {
+                shippingInput.value = 16500;
+                realCostInput.value = 12500;
+            }
+        } else {
+            if (zoneBadge) {
+                zoneBadge.className = 'text-[10px] font-bold text-amber-400';
+                zoneBadge.textContent = 'Resto del País • $18.000';
+            }
+            if (ruleCaption) ruleCaption.textContent = 'Tarifa Resto del País';
+            if (autoSetValues && shippingInput && realCostInput) {
+                shippingInput.value = 18000;
+                realCostInput.value = 14500;
+            }
+        }
+    }
+    updateSummaryFooter();
+}
+
+function onShippingManualEdit() {
+    const ruleCaption = document.getElementById('shippingRuleCaption');
+    if (ruleCaption) ruleCaption.textContent = 'Tarifa personalizada';
+    updateSummaryFooter();
+}
+
+function setShippingMode(mode) {
+    shippingMode = mode;
+    const envInput = document.getElementById('envio');
+    if (envInput) envInput.value = mode;
+
+    const btnPago = document.getElementById('modePagoBtn');
+    const btnCod = document.getElementById('modeContraentregaBtn');
+
+    if (mode === 'Pago') {
+        if (btnPago) {
+            btnPago.style.background = '#1e293b';
+            btnPago.style.color = '#ffffff';
+            btnPago.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+        }
+        if (btnCod) {
+            btnCod.style.background = 'transparent';
+            btnCod.style.color = '#94a3b8';
+            btnCod.style.boxShadow = 'none';
+        }
+    } else {
+        if (btnCod) {
+            btnCod.style.background = 'rgba(245, 158, 11, 0.2)';
+            btnCod.style.color = '#fde68a';
+            btnCod.style.border = '1px solid rgba(245, 158, 11, 0.4)';
+        }
+        if (btnPago) {
+            btnPago.style.background = 'transparent';
+            btnPago.style.color = '#94a3b8';
+            btnPago.style.boxShadow = 'none';
+        }
+    }
+    updateSummaryFooter();
+}
+
+// Extractor de catálogo real desde dbVentas
+function getCatalogFromDB() {
+    const map = new Map();
+    if (Array.isArray(dbVentas)) {
+        for (const v of dbVentas) {
+            const rawName = (v.producto || '').trim();
+            const norm = normalizar(rawName);
+            if (norm && !map.has(norm)) {
+                map.set(norm, {
+                    name: rawName,
+                    cost: Number(v.costo) || 0,
+                    price: Number(v.valor) || 0,
+                    size: v.talla || 'M',
+                    foto: v.foto && v.foto !== 'https://via.placeholder.com/50' ? v.foto : null,
+                    tag: (v.talla && ['S', 'M', 'L', 'XL', 'XXL'].includes(v.talla)) ? 'Prenda' : 'Accesorio'
+                });
+            }
+        }
+    }
+    return Array.from(map.values());
+}
+
+function addNewItem() {
+    const nextId = modalItems.length ? Math.max(...modalItems.map(i => i.id)) + 1 : 1;
+    const cfg = getStoreItemConfig();
+    modalItems.push({
+        id: nextId,
+        type: 'ropa',
+        name: '',
+        qty: 1,
+        size: cfg.clothingSizes[0] || 'M',
+        accType: cfg.accTypes[0] || 'Otro',
+        accCustom: '',
+        cost: 0,
+        price: 0,
+        image: null,
+        showNote: false,
+        note: ''
+    });
+    activePasteItemId = nextId;
+    renderModalItems();
+}
+
+function deleteItem(id) {
+    if (modalItems.length <= 1) return;
+    modalItems = modalItems.filter(i => i.id !== id);
+    renderModalItems();
+}
+
+function changeItemType(id, newType) {
+    const item = modalItems.find(i => i.id === id);
+    if (!item || item.type === newType) return;
+    item.type = newType;
+    renderModalItems();
+}
+
+function setItemSize(id, size) {
+    const item = modalItems.find(i => i.id === id);
+    if (!item) return;
+    item.size = size;
+    renderModalItems();
+}
+
+function setAccType(id, accType) {
+    const item = modalItems.find(i => i.id === id);
+    if (!item) return;
+    item.accType = accType;
+    renderModalItems();
+}
+
+function setAccCustom(id, val) {
+    const item = modalItems.find(i => i.id === id);
+    if (item) item.accCustom = val;
+}
+
+function changeItemQty(id, delta) {
+    const item = modalItems.find(i => i.id === id);
+    if (!item) return;
+    item.qty = Math.max(1, (Number(item.qty) || 1) + delta);
+    renderModalItems();
+}
+
+function updateItemAmount(id, field, rawVal) {
+    const item = modalItems.find(i => i.id === id);
+    if (!item) return;
+    item[field] = Math.max(0, Number(rawVal) || 0);
+
+    const qty = Math.max(1, Number(item.qty) || 1);
+    const profit = ((Number(item.price) || 0) - (Number(item.cost) || 0)) * qty;
+    const profitPositive = profit >= 0;
+    const box = document.getElementById(`itemProfitBox-${id}`);
+    if (box) {
+        box.className = `sm-margin-box ${profitPositive ? 'positive' : 'negative'}`;
+        box.textContent = `${profitPositive ? '+' : ''}${formatCOP(profit)}`;
+    }
+    updateSummaryFooter();
+}
+
+function toggleItemNote(id) {
+    const item = modalItems.find(i => i.id === id);
+    if (!item) return;
+    item.showNote = !item.showNote;
+    renderModalItems();
+}
+
+function updateItemNote(id, val) {
+    const item = modalItems.find(i => i.id === id);
+    if (item) item.note = val;
+}
+
+function openProductDropdown(id) {
+    activePasteItemId = id;
+    const dd = document.getElementById(`productDropdown-${id}`);
+    const input = document.getElementById(`productInput-${id}`);
+    if (dd && input) {
+        dd.innerHTML = buildCatalogDropdownHTML(id, input.value);
+        dd.style.display = 'block';
+    }
+}
+
+function toggleProductDropdown(id, event) {
+    if (event) event.preventDefault();
+    const dd = document.getElementById(`productDropdown-${id}`);
+    if (!dd) return;
+    if (dd.style.display === 'none' || !dd.style.display) {
+        openProductDropdown(id);
+        document.getElementById(`productInput-${id}`)?.focus();
+    } else {
+        dd.style.display = 'none';
+    }
+}
+
+function closeProductDropdownDelayed(id) {
+    setTimeout(() => {
+        const dd = document.getElementById(`productDropdown-${id}`);
+        if (dd) dd.style.display = 'none';
+    }, 180);
+}
+
+function onProductSearchInput(id, val) {
+    const item = modalItems.find(i => i.id === id);
+    if (item) item.name = val;
+    openProductDropdown(id);
+}
+
+function selectCatalogProduct(id, productName) {
+    const item = modalItems.find(i => i.id === id);
+    const catalog = getCatalogFromDB();
+    const found = catalog.find(p => p.name === productName);
+    if (!item || !found) return;
+
+    item.name = found.name;
+    item.cost = found.cost;
+    item.price = found.price;
+    if (found.foto) item.image = found.foto;
+    if (found.size) item.size = found.size;
+    renderModalItems();
+}
+
+function openFileDialog(id) {
+    activePasteItemId = id;
+    document.getElementById(`fileInput-${id}`)?.click();
+}
+
+function handleFileSelect(id, event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    readImageFileToItem(id, file);
+}
+
+function clearItemImage(id) {
+    const item = modalItems.find(i => i.id === id);
+    if (!item) return;
+    item.image = null;
+    renderModalItems();
+}
+
+async function readImageFileToItem(id, file) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const item = modalItems.find(i => i.id === id);
+        if (item) {
+            const compressed = typeof compressImage === 'function' ? await compressImage(e.target.result) : e.target.result;
+            item.image = compressed;
+            renderModalItems();
+            showToast(`Imagen adjuntada al Ítem #${modalItems.indexOf(item) + 1}`);
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+// Pegado directo de imágenes (Ctrl + V)
+document.addEventListener('paste', async (event) => {
+    const modalEl = document.getElementById('modalNuevaVenta');
+    if (!modalEl || modalEl.style.display === 'none') return;
+
+    const clipItems = event.clipboardData?.items;
+    if (!clipItems) return;
+
+    for (const clip of clipItems) {
+        if (clip.type.startsWith('image/')) {
+            const file = clip.getAsFile();
+            if (file && modalItems.length) {
+                const targetId = modalItems.some(i => i.id === activePasteItemId) ? activePasteItemId : modalItems[0].id;
+                await readImageFileToItem(targetId, file);
+                event.preventDefault();
+                break;
+            }
+        }
+    }
+});
+
+function buildCatalogDropdownHTML(itemId, filterQuery = '') {
+    const q = filterQuery.trim().toLowerCase();
+    const catalog = getCatalogFromDB();
+    const matches = catalog.filter(prod =>
+        !q || prod.name.toLowerCase().includes(q) || (prod.tag && prod.tag.toLowerCase().includes(q))
+    ).slice(0, 8);
+
+    if (!matches.length) {
+        return `
+            <div style="padding:10px 14px; font-size:11px; color:#94a3b8;">
+                Producto nuevo: <strong style="color:#ffffff;">"${escapeAttr(filterQuery)}"</strong> — ingresa costo y venta abajo.
+            </div>
+        `;
+    }
+
+    return matches.map(prod => `
+        <button type="button" onmousedown="selectCatalogProduct(${itemId}, '${escapeAttr(prod.name)}')" class="sm-catalog-row">
+            <div style="min-width:0; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; font-weight:700; color:#f1f5f9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeAttr(prod.name)}</span>
+                <span style="padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; text-transform:uppercase; background:rgba(99, 102, 241, 0.15); color:#a5b4fc; border:1px solid rgba(99, 102, 241, 0.3);">${escapeAttr(prod.tag || 'Item')}</span>
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+                <span style="display:block; font-size:12px; font-weight:700; color:#34d399;">${formatCOP(prod.price)}</span>
+                <span style="display:block; font-size:10px; color:#64748b;">Costo: ${formatCOP(prod.cost)}</span>
+            </div>
+        </button>
+    `).join('');
+}
+
+function renderModalItems() {
+    const container = document.getElementById('garmentsContainer');
+    if (!container) return;
+
+    const itemsBadge = document.getElementById('itemsBadge');
+    if (itemsBadge) {
+        itemsBadge.textContent = `${modalItems.length} ${modalItems.length === 1 ? 'ítem' : 'ítems'}`;
+    }
+
+    const cfg = getStoreItemConfig();
+
+    container.innerHTML = modalItems.map((item, idx) => {
+        const isRopa = item.type === 'ropa';
+        const qty = Math.max(1, Number(item.qty) || 1);
+        const unitCost = Number(item.cost) || 0;
+        const unitPrice = Number(item.price) || 0;
+        const lineSubtotal = unitPrice * qty;
+        const profit = (unitPrice - unitCost) * qty;
+        const profitPositive = profit >= 0;
+
+        return `
+        <article class="sm-item-card sm-animate-entry" data-item-id="${item.id}">
+            <!-- Cabecera de ítem -->
+            <div class="sm-item-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="sm-item-badge ${isRopa ? 'prenda' : 'accesorio'}">
+                        <span style="width:6px; height:6px; border-radius:50%; background:${isRopa ? '#818cf8' : '#22d3ee'};"></span>
+                        ÍTEM #${idx + 1} • ${isRopa ? cfg.cat1.toUpperCase() : cfg.cat2.toUpperCase()}
+                    </span>
+                    ${qty > 1 ? `
+                    <span style="padding:2px 8px; border-radius:6px; background:#1e293b; border:1px solid #334155; font-size:11px; font-weight:800; color:#ffffff;">
+                        ${qty} uds • ${formatCOP(lineSubtotal)}
+                    </span>` : ''}
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <!-- Switch Categoría -->
+                    <div style="display:inline-flex; padding:2px; border-radius:10px; background:#0b0e16; border:1px solid #1e2536;">
+                        <button type="button" onclick="changeItemType(${item.id}, 'ropa')" style="padding:4px 10px; border-radius:7px; border:none; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s ease; ${
+                            isRopa ? 'background:#4f46e5; color:#ffffff; box-shadow:0 1px 4px rgba(79, 70, 229, 0.4);' : 'background:transparent; color:#94a3b8;'
+                        }">
+                            ${cfg.cat1}
+                        </button>
+                        <button type="button" onclick="changeItemType(${item.id}, 'accesorio')" style="padding:4px 10px; border-radius:7px; border:none; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s ease; ${
+                            !isRopa ? 'background:#0891b2; color:#ffffff; box-shadow:0 1px 4px rgba(8, 145, 178, 0.4);' : 'background:transparent; color:#94a3b8;'
+                        }">
+                            ${cfg.cat2}
+                        </button>
+                    </div>
+
+                    ${modalItems.length > 1 ? `
+                    <button type="button" onclick="deleteItem(${item.id})" title="Eliminar este ítem" style="width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#64748b; background:transparent; border:none; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.color='#f43f5e'; this.style.background='rgba(244,63,94,0.1)';" onmouseout="this.style.color='#64748b'; this.style.background='transparent';">
+                        <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>` : ''}
+                </div>
+            </div>
+
+            <!-- Campo Producto con Menú Desplegable Enriquecido -->
+            <div style="position:relative;">
+                <label class="sm-label">Producto <span class="req">*</span></label>
+                <div class="sm-input-wrap">
+                    <span class="sm-input-icon">
+                        <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input 
+                        type="text" 
+                        id="productInput-${item.id}"
+                        value="${escapeAttr(item.name)}"
+                        onfocus="openProductDropdown(${item.id})"
+                        oninput="onProductSearchInput(${item.id}, this.value)"
+                        onblur="closeProductDropdownDelayed(${item.id})"
+                        autocomplete="off"
+                        placeholder="Buscar o escribir nombre del producto..."
+                        class="sm-input has-icon"
+                    >
+                    <button type="button" onmousedown="toggleProductDropdown(${item.id}, event)" tabindex="-1" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748b; cursor:pointer;">
+                        <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                </div>
+
+                <div id="productDropdown-${item.id}" class="sm-catalog-dropdown" style="display:none;"></div>
+            </div>
+
+            <!-- Fila intermedia: Talla / Formato + Foto -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; align-items:start;">
+                <!-- Talla o Formato -->
+                <div>
+                    ${isRopa ? `
+                        <label class="sm-label">Talla / Formato <span class="req">*</span></label>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(44px, 1fr)); gap:6px;">
+                            ${cfg.clothingSizes.map(sz => `
+                                <button type="button" onclick="setItemSize(${item.id}, '${sz}')" class="sm-size-btn ${item.size === sz ? 'active' : ''}">
+                                    ${sz}
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <label class="sm-label">Tipo de Artículo <span class="req">*</span></label>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr)); gap:6px;">
+                                ${cfg.accTypes.map(tp => `
+                                    <button type="button" onclick="setAccType(${item.id}, '${tp}')" class="sm-size-btn sm-acc-btn ${item.accType === tp ? 'active' : ''}">
+                                        ${tp}
+                                    </button>
+                                `).join('')}
+                            </div>
+                            ${item.accType === 'Otro' ? `
+                                <input 
+                                    type="text" 
+                                    value="${escapeAttr(item.accCustom)}"
+                                    oninput="setAccCustom(${item.id}, this.value)"
+                                    placeholder="Especifica el artículo..."
+                                    class="sm-input"
+                                    style="margin-top:4px;"
+                                >
+                            ` : ''}
+                        </div>
+                    `}
+                </div>
+
+                <!-- Foto del Producto -->
+                <div>
+                    <label class="sm-label">Foto del Producto <span class="opt">(Ctrl+V o clic)</span></label>
+                    ${item.image ? `
+                        <div style="display:flex; align-items:center; gap:10px; background:#0b0e16; border:1px solid #1e2536; border-radius:12px; padding:6px 10px;">
+                            <div style="position:relative; width:44px; height:44px; border-radius:8px; overflow:hidden; border:1px solid #1e2536; background:#000; flex-shrink:0;">
+                                <img src="${item.image}" alt="Preview" style="width:100%; height:100%; object-fit:cover;">
+                                <button type="button" onclick="clearItemImage(${item.id})" title="Quitar foto" style="position:absolute; top:2px; right:2px; width:16px; height:16px; border-radius:50%; background:rgba(0,0,0,0.8); color:#f1f5f9; border:none; cursor:pointer; font-size:10px; line-height:1; display:flex; align-items:center; justify-content:center;">×</button>
+                            </div>
+                            <div style="min-width:0; flex:1;">
+                                <p style="font-size:11px; font-weight:600; color:#34d399; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Imagen adjunta</p>
+                                <button type="button" onclick="openFileDialog(${item.id})" style="font-size:10px; color:#94a3b8; text-decoration:underline; background:none; border:none; cursor:pointer; padding:0; margin-top:2px;">Reemplazar</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <button type="button" onclick="openFileDialog(${item.id})" style="width:100%; height:38px; display:flex; align-items:center; justify-content:center; gap:8px; background:#0b0e16; border:1px dashed #1e2536; border-radius:12px; color:#94a3b8; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.borderColor='#3b82f6'; this.style.color='#f1f5f9';" onmouseout="this.style.borderColor='#1e2536'; this.style.color='#94a3b8';">
+                            <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            Subir o pegar imagen (Ctrl+V)
+                        </button>
+                    `}
+                    <input type="file" id="fileInput-${item.id}" accept="image/*" onchange="handleFileSelect(${item.id}, event)" style="display:none;">
+                </div>
+            </div>
+
+            <!-- Fila Financiera: Cantidad, Costo, Venta, Margen -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; padding-top:4px;">
+                <div>
+                    <label class="sm-label">Cantidad</label>
+                    <div style="height:38px; display:flex; align-items:center; justify-content:space-between; background:#0b0e16; border:1px solid #1e2536; border-radius:12px; padding:0 6px;">
+                        <button type="button" onclick="changeItemQty(${item.id}, -1)" style="width:26px; height:26px; border-radius:6px; background:#1e293b; border:none; color:#ffffff; font-size:14px; font-weight:700; cursor:pointer;">−</button>
+                        <span style="font-size:13px; font-weight:800; color:#ffffff;">${qty}</span>
+                        <button type="button" onclick="changeItemQty(${item.id}, 1)" style="width:26px; height:26px; border-radius:6px; background:#1e293b; border:none; color:#ffffff; font-size:14px; font-weight:700; cursor:pointer;">+</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="sm-label">Costo Unit.</label>
+                    <div class="sm-input-wrap">
+                        <span class="sm-input-icon" style="color:#64748b; font-weight:700; font-size:12px;">$</span>
+                        <input type="number" min="0" step="500" value="${item.cost || ''}" placeholder="0" oninput="updateItemAmount(${item.id}, 'cost', this.value)" class="sm-input" style="padding-left:26px;">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="sm-label">Venta Unit. <span class="req">*</span></label>
+                    <div class="sm-input-wrap">
+                        <span class="sm-input-icon" style="color:#64748b; font-weight:700; font-size:12px;">$</span>
+                        <input type="number" min="0" step="500" value="${item.price || ''}" placeholder="0" oninput="updateItemAmount(${item.id}, 'price', this.value)" class="sm-input" style="padding-left:26px; font-weight:700;">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="sm-label">Margen Ítem</label>
+                    <div id="itemProfitBox-${item.id}" class="sm-margin-box ${profitPositive ? 'positive' : 'negative'}">
+                        ${profitPositive ? '+' : ''}${formatCOP(profit)}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observación / Nota Especial en Ámbar -->
+            <div>
+                ${!item.showNote ? `
+                    <button type="button" onclick="toggleItemNote(${item.id})" style="display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:8px; background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3); font-size:11px; font-weight:700; color:#fde68a; cursor:pointer;">
+                        <svg style="width:14px; height:14px; color:#f59e0b; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        + Agregar nota o instrucción especial
+                    </button>
+                ` : `
+                    <div style="background:rgba(245, 158, 11, 0.08); border:1px solid rgba(245, 158, 11, 0.5); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <label style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; text-transform:uppercase; color:#fde68a;">
+                                <svg style="width:14px; height:14px; color:#f59e0b; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                Observación / Nota Especial Importante
+                            </label>
+                            <button type="button" onclick="toggleItemNote(${item.id})" style="font-size:11px; color:#fde68a; opacity:0.8; text-decoration:underline; background:none; border:none; cursor:pointer;">Ocultar</button>
+                        </div>
+                        <textarea rows="2" oninput="updateItemNote(${item.id}, this.value)" placeholder="Ej. Estampado espalda DTF, tarjeta de regalo, empaque especial..." class="sm-input" style="background:#13110a; border-color:rgba(245, 158, 11, 0.4); color:#fef3c7; height:auto; resize:vertical;">${escapeAttr(item.note)}</textarea>
+                    </div>
+                `}
+            </div>
+        </article>
+        `;
+    }).join('');
+
+    updateSummaryFooter();
+}
+
+function updateSummaryFooter() {
+    const subtotal = modalItems.reduce((acc, item) => acc + ((Number(item.price) || 0) * (Math.max(1, Number(item.qty) || 1))), 0);
+    const totalItemsCost = modalItems.reduce((acc, item) => acc + ((Number(item.cost) || 0) * (Math.max(1, Number(item.qty) || 1))), 0);
+    const shippingInput = document.getElementById('shippingValue');
+    const realCostInput = document.getElementById('shippingRealCost');
+    const discountInput = document.getElementById('discountValue');
+
+    const shippingCharged = shippingInput ? (Number(shippingInput.value) || 0) : 0;
+    const shippingRealCost = realCostInput ? (Number(realCostInput.value) || 0) : 0;
+    const discount = discountInput ? (Number(discountInput.value) || 0) : 0;
+
+    const shippingMargin = shippingMode === 'Pago' ? (shippingCharged - shippingRealCost) : 0;
+    const netProfit = (subtotal - totalItemsCost - discount) + shippingMargin;
+
+    const spreadBadge = document.getElementById('shippingSpreadBadge');
+    if (spreadBadge) {
+        if (shippingMode === 'Contraentrega') {
+            spreadBadge.style.color = '#f59e0b';
+            spreadBadge.textContent = 'Paga cliente';
+        } else {
+            spreadBadge.style.color = shippingMargin >= 0 ? '#34d399' : '#fb7185';
+            spreadBadge.textContent = `${shippingMargin >= 0 ? '+' : ''}${formatCOP(shippingMargin)}`;
+        }
+    }
+
+    const footerSubtotal = document.getElementById('footerSubtotal');
+    const footerShipping = document.getElementById('footerShipping');
+    const footerProfit = document.getElementById('footerProfit');
+    const footerTotal = document.getElementById('footerTotal');
+    const discountBlock = document.getElementById('footerDiscountBlock');
+    const footerDiscount = document.getElementById('footerDiscount');
+
+    if (footerSubtotal) footerSubtotal.textContent = formatCOP(subtotal);
+
+    if (discount > 0 && discountBlock && footerDiscount) {
+        discountBlock.style.display = 'flex';
+        footerDiscount.textContent = `-${formatCOP(discount)}`;
+    } else if (discountBlock) {
+        discountBlock.style.display = 'none';
+    }
+
+    let totalToday = Math.max(0, subtotal - discount);
+    if (shippingMode === 'Pago') {
+        totalToday += shippingCharged;
+        if (footerShipping) {
+            footerShipping.style.color = '#e2e8f0';
+            footerShipping.textContent = formatCOP(shippingCharged);
+        }
+    } else {
+        if (footerShipping) {
+            footerShipping.style.color = '#fde68a';
+            footerShipping.textContent = `${formatCOP(shippingCharged)} (Contraentrega)`;
+        }
+    }
+
+    if (footerProfit) {
+        footerProfit.style.color = netProfit >= 0 ? '#34d399' : '#fb7185';
+        footerProfit.textContent = `${netProfit >= 0 ? '+' : ''}${formatCOP(netProfit)}`;
+    }
+    if (footerTotal) footerTotal.textContent = formatCOP(totalToday);
+}
+
+function toggleSmartPasteDrawer(forceState) {
+    const drawer = document.getElementById('smartPasteDrawer');
+    if (!drawer) return;
+    const show = typeof forceState === 'boolean' ? forceState : drawer.classList.contains('hidden');
+    if (show) {
+        drawer.classList.remove('hidden');
+        document.getElementById('rawChatInput')?.focus();
+    } else {
+        drawer.classList.add('hidden');
+    }
+}
+
+function fillSampleChatText() {
+    const input = document.getElementById('rawChatInput');
+    if (input) {
+        input.value =
+            "Nombre: Laura Sofía Martínez\n" +
+            "CC: 1020845912\n" +
+            "Cel: 318 492 7710\n" +
+            "Ciudad: Medellín - Antioquia\n" +
+            "Dirección: Carrera 43A # 14-109 Edificio Nova Apto 502, El Poblado\n" +
+            "Correo: laurasofia.m@gmail.com";
+    }
+}
+
+function parseSmartChatData() {
+    const rawInput = document.getElementById('rawChatInput');
+    const raw = rawInput ? rawInput.value.trim() : '';
+    if (!raw) {
+        showToast('Pega primero el mensaje con los datos del cliente');
+        return;
+    }
+
+    const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    let extractedPhone = '';
+    let extractedDoc = '';
+    let extractedEmail = '';
+    let extractedCity = '';
+    let extractedAddress = '';
+    let extractedName = '';
+
+    // 1. Extraer Email
+    const emailMatch = raw.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    if (emailMatch) extractedEmail = emailMatch[0];
+
+    // 2. Extraer Teléfono celular colombiano
+    const phoneMatch = raw.match(/(?:\+?57[\s-]*)?(3\d{2}[\s.-]?\d{3}[\s.-]?\d{4})/);
+    if (phoneMatch) {
+        extractedPhone = phoneMatch[1].replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+    }
+
+    // 3. Extraer Cédula / NIT
+    const cleanNoPhone = phoneMatch ? raw.replace(phoneMatch[0], '') : raw;
+    const docLabeled = cleanNoPhone.match(/(?:c\.?c\.?|c[eé]dula|nit|doc(?:umento)?|id)\s*[:#.-]?\s*(\d[\d.]{5,12})/i);
+    if (docLabeled) {
+        extractedDoc = docLabeled[1].replace(/\./g, '');
+    } else {
+        const genericDigits = cleanNoPhone.match(/\b\d{6,11}\b/);
+        if (genericDigits) extractedDoc = genericDigits[0];
+    }
+
+    // 4. Ciudad
+    const cityDict = [
+        { key: 'bogota', label: 'Bogotá D.C. - Bogotá' },
+        { key: 'medellin', label: 'Antioquia - Medellín' },
+        { key: 'cali', label: 'Valle del Cauca - Cali' },
+        { key: 'barranquilla', label: 'Atlántico - Barranquilla' },
+        { key: 'bucaramanga', label: 'Santander - Bucaramanga' },
+        { key: 'cartagena', label: 'Bolívar - Cartagena' },
+        { key: 'pereira', label: 'Risaralda - Pereira' },
+        { key: 'armenia', label: 'Quindío - Armenia' },
+        { key: 'manizales', label: 'Caldas - Manizales' },
+        { key: 'cucuta', label: 'Norte de Santander - Cúcuta' },
+        { key: 'ibague', label: 'Tolima - Ibagué' },
+        { key: 'villavicencio', label: 'Meta - Villavicencio' },
+        { key: 'neiva', label: 'Huila - Neiva' },
+        { key: 'valledupar', label: 'Cesar - Valledupar' },
+        { key: 'santa marta', label: 'Magdalena - Santa Marta' },
+        { key: 'pasto', label: 'Nariño - Pasto' },
+        { key: 'tunja', label: 'Boyacá - Tunja' },
+        { key: 'monteria', label: 'Córdoba - Montería' },
+        { key: 'popayan', label: 'Cauca - Popayán' },
+        { key: 'sincelejo', label: 'Sucre - Sincelejo' },
+        { key: 'chia', label: 'Cundinamarca - Chía' },
+        { key: 'soacha', label: 'Cundinamarca - Soacha' },
+        { key: 'envigado', label: 'Antioquia - Envigado' },
+        { key: 'rionegro', label: 'Antioquia - Rionegro' }
+    ];
+
+    const normalizedFull = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const foundCity = cityDict.find(c => normalizedFull.includes(c.key));
+    if (foundCity) {
+        extractedCity = foundCity.label;
+    } else {
+        const cityLine = lines.find(l => /^(?:ciudad|municipio|destino)\s*[:.-]/i.test(l));
+        if (cityLine) extractedCity = cityLine.replace(/^(?:ciudad|municipio|destino)\s*[:.-]\s*/i, '').trim();
+    }
+
+    // 5. Dirección física
+    const addrLine = lines.find(l =>
+        /^(?:dir(?:ecci[oó]n)?|entrega)\s*[:.-]/i.test(l) ||
+        /\b(?:calle|cll|cl|carrera|cra|kr|diagonal|diag|dg|transversal|tv|avenida|av|manzana|mz|vereda)\b/i.test(l)
+    );
+    if (addrLine) {
+        extractedAddress = addrLine.replace(/^(?:dir(?:ecci[oó]n)?|entrega)\s*[:.-]\s*/i, '').trim();
+    }
+
+    // 6. Nombre del Cliente
+    const nameLine = lines.find(l => /^(?:nombre(?:\s+completo)?|cliente|destinatario|recibe)\s*[:.-]/i.test(l));
+    if (nameLine) {
+        extractedName = nameLine.replace(/^(?:nombre(?:\s+completo)?|cliente|destinatario|recibe)\s*[:.-]\s*/i, '').trim();
+    } else {
+        const candidateLine = lines.find(l => {
+            const clean = l.replace(/^(?:hola|buenas|datos)[,\s]*/i, '').trim();
+            return clean.length >= 5 &&
+                !/\d/.test(clean) &&
+                !clean.includes('@') &&
+                (!foundCity || !clean.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(foundCity.key));
+        });
+        if (candidateLine) extractedName = candidateLine;
+    }
+
+    if (extractedPhone) {
+        const telEl = document.getElementById('telefono');
+        if (telEl) telEl.value = extractedPhone;
+        handlePhoneLookup(extractedPhone);
+    }
+    if (extractedName) {
+        const cliEl = document.getElementById('cliente');
+        if (cliEl) cliEl.value = extractedName;
+    }
+    if (extractedDoc) {
+        const docEl = document.getElementById('cedula');
+        if (docEl) docEl.value = extractedDoc;
+    }
+    if (extractedEmail) {
+        const mailEl = document.getElementById('email');
+        if (mailEl) mailEl.value = extractedEmail;
+    }
+    if (extractedAddress) {
+        const dirEl = document.getElementById('direccion');
+        if (dirEl) dirEl.value = extractedAddress;
+    }
+    if (extractedCity) {
+        const paisEl = document.getElementById('pais');
+        const ciudadEl = document.getElementById('ciudad');
+        if (paisEl) paisEl.value = 'Colombia';
+        if (ciudadEl) ciudadEl.value = extractedCity;
+        evaluateShippingTariff(true);
+    }
+
+    toggleSmartPasteDrawer(false);
+    showToast('Datos extraídos del chat y asignados');
+}
+
+function runQuickDemo() {
+    selectChannel('Instagram');
+    const telEl = document.getElementById('telefono');
+    if (telEl) {
+        telEl.value = '315 672 9041';
+        handlePhoneLookup('3156729041');
+    }
+    const cliEl = document.getElementById('cliente');
+    if (cliEl && !cliEl.value) cliEl.value = 'Valentina Gómez Morales';
+
+    const dirEl = document.getElementById('direccion');
+    if (dirEl && !dirEl.value) dirEl.value = 'Calle 10 # 43E-25 Apto 704, El Poblado';
+
+    const ciudadEl = document.getElementById('ciudad');
+    if (ciudadEl) ciudadEl.value = 'Antioquia - Medellín';
+
+    const guiaEl = document.getElementById('guia');
+    if (guiaEl) guiaEl.value = '2400981234';
+
+    const payEl = document.getElementById('paymentMethod');
+    if (payEl) payEl.value = 'Nequi';
+
+    const discEl = document.getElementById('discountValue');
+    if (discEl) discEl.value = 0;
+
+    setShippingMode('Pago');
+    evaluateShippingTariff(true);
+
+    const cfg = getStoreItemConfig();
+    modalItems = [
+        {
+            id: 1,
+            type: 'ropa',
+            name: cfg.title.includes('Tenis') ? 'Nike Air Jordan 1 Retro High' : 'Hoodie Streetwear Oversize Monos',
+            qty: 2,
+            size: cfg.clothingSizes[1] || 'M',
+            accType: cfg.accTypes[0] || 'Bolso',
+            accCustom: '',
+            cost: 65000,
+            price: 135000,
+            image: null,
+            showNote: true,
+            note: 'Empaque para regalo con calcomanías exclusivas.'
+        },
+        {
+            id: 2,
+            type: 'accesorio',
+            name: cfg.title.includes('Tenis') ? 'Medias Deportivas Antideslizantes' : 'Gorra Trucker Bordada',
+            qty: 1,
+            size: cfg.clothingSizes[0] || 'M',
+            accType: cfg.accTypes[0] || 'Gorra',
+            accCustom: '',
+            cost: 18000,
+            price: 45000,
+            image: null,
+            showNote: false,
+            note: ''
+        }
+    ];
+    renderModalItems();
+    showToast('Datos de demostración cargados');
+}
+
+function copyWhatsAppSummary() {
+    if (!lastOrderSummaryText) return;
+    navigator.clipboard?.writeText(lastOrderSummaryText).then(() => {
+        showToast('Resumen copiado para WhatsApp');
+    }).catch(() => {
+        const temp = document.createElement('textarea');
+        temp.value = lastOrderSummaryText;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showToast('Resumen copiado para WhatsApp');
+    });
+}
+
+// Inicializar el formulario y resetear ítems
+function initGarmentsForm() {
+    const cfg = getStoreItemConfig();
+    const fechaEl = document.getElementById('fecha');
+    if (fechaEl && !fechaEl.value) {
+        fechaEl.value = new Date().toISOString().split('T')[0];
+    }
+    const paisEl = document.getElementById('pais');
+    if (paisEl && !paisEl.value) paisEl.value = 'Colombia';
+
+    const modalTitle = document.getElementById('salesModalTitle');
+    if (modalTitle) modalTitle.textContent = 'Registrar Nueva Venta';
+
+    const modalSubtitle = document.getElementById('salesModalSubtitle');
+    if (modalSubtitle) modalSubtitle.textContent = `${cfg.title} • Gestión de Pedidos`;
+
+    const btnSubmit = document.getElementById('btnSubmit');
+    if (btnSubmit) {
+        btnSubmit.innerHTML = `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Registrar Venta`;
+    }
+    const btnCancel = document.getElementById('btnCancelEdit');
+    if (btnCancel) btnCancel.style.display = 'none';
+
+    modalItems = [{
+        id: 1,
+        type: 'ropa',
+        name: '',
+        qty: 1,
+        size: cfg.clothingSizes[0] || 'M',
+        accType: cfg.accTypes[0] || 'Otro',
+        accCustom: '',
+        cost: 0,
+        price: 0,
+        image: null,
+        showNote: false,
+        note: ''
+    }];
+
+    renderModalItems();
+    evaluateShippingTariff(true);
+}
+
+// Backwards compatibility wrappers
+function createGarmentBlock(garmentData = null) {
+    if (garmentData) {
+        const nextId = modalItems.length ? Math.max(...modalItems.map(i => i.id)) + 1 : 1;
+        modalItems.push({
+            id: nextId,
+            type: 'ropa',
+            name: garmentData.producto || '',
+            qty: 1,
+            size: garmentData.talla || 'M',
+            accType: 'Otro',
+            accCustom: '',
+            cost: Number(garmentData.costo) || 0,
+            price: Number(garmentData.valor) || 0,
+            image: garmentData.foto || null,
+            showNote: Boolean(garmentData.observacion),
+            note: garmentData.observacion || ''
+        });
+        renderModalItems();
+    } else {
+        addNewItem();
+    }
+}
+
+function updateGarmentHeaders() {
+    renderModalItems();
 }
 
 function cancelarEdicion() {
     editingId = null;
-    document.getElementById('ventaForm').reset();
+    const form = document.getElementById('ventaForm');
+    if (form) form.reset();
+
     const btnSubmit = document.getElementById('btnSubmit');
-    if (btnSubmit) btnSubmit.innerHTML = '<i data-lucide="check"></i> Registrar Venta';
-    document.getElementById('btnCancelEdit').style.display = "none";
-    // Resetear título del modal
-    const modalTitle = document.querySelector('#modalNuevaVenta .calendar-modal-header h3');
-    if (modalTitle) modalTitle.innerHTML = '<i data-lucide="file-plus-2" style="color:var(--primary);"></i> Registrar Nueva Venta';
-    if (window.lucide) window.lucide.createIcons();
-    // Cerrar el modal
+    if (btnSubmit) {
+        btnSubmit.innerHTML = `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Registrar Venta`;
+    }
+    const btnCancel = document.getElementById('btnCancelEdit');
+    if (btnCancel) btnCancel.style.display = 'none';
+
+    const modalTitle = document.getElementById('salesModalTitle');
+    if (modalTitle) modalTitle.textContent = 'Registrar Nueva Venta';
+
+    const addBtn = document.getElementById('btnAddGarment');
+    if (addBtn) addBtn.style.display = 'inline-flex';
+
     if (typeof _closeVentaModal === 'function') _closeVentaModal();
     initGarmentsForm();
 }
 
 function prepararEdicion(id) {
     editingId = id;
-    const v = dbVentas.find(x => x.id === id);
+    const v = Array.isArray(dbVentas) ? dbVentas.find(x => x.id === id) : null;
     if (!v) return;
-    const container = document.getElementById('garmentsContainer');
-    if (container) {
-        container.innerHTML = '';
-        createGarmentBlock(v);
-    }
-    const addBtn = document.getElementById('btnAddGarment');
-    if (addBtn) addBtn.style.display = 'none';
-
-    const removeBtn = container ? container.querySelector('.btn-remove-garment') : null;
-    if (removeBtn) removeBtn.style.display = 'none';
 
     ['pais', 'ciudad', 'plataforma', 'cliente', 'cedula', 'telefono', 'email', 'direccion', 'envio', 'guia', 'fecha'].forEach(k => {
         const el = document.getElementById(k);
-        if (el) el.value = v[k] || "";
+        if (el) el.value = v[k] || '';
     });
 
+    if (v.plataforma) selectChannel(v.plataforma);
+    if (v.envio) setShippingMode(v.envio);
+
+    // Extraer datos financieros de extra_data si existen
+    if (v.extra_data) {
+        const ex = typeof v.extra_data === 'string' ? JSON.parse(v.extra_data) : v.extra_data;
+        if (ex.metodoPago) {
+            const payEl = document.getElementById('paymentMethod');
+            if (payEl) payEl.value = ex.metodoPago;
+        }
+        if (ex.descuento) {
+            const discEl = document.getElementById('discountValue');
+            if (discEl) discEl.value = ex.descuento;
+        }
+        if (ex.shippingValue) {
+            const shValEl = document.getElementById('shippingValue');
+            if (shValEl) shValEl.value = ex.shippingValue;
+        }
+        if (ex.shippingRealCost) {
+            const shRealEl = document.getElementById('shippingRealCost');
+            if (shRealEl) shRealEl.value = ex.shippingRealCost;
+        }
+    }
+
+    modalItems = [{
+        id: 1,
+        type: 'ropa',
+        name: v.producto || '',
+        qty: 1,
+        size: v.talla || 'M',
+        accType: 'Otro',
+        accCustom: '',
+        cost: Number(v.costo) || 0,
+        price: Number(v.valor) || 0,
+        image: v.foto && v.foto !== 'https://via.placeholder.com/50' ? v.foto : null,
+        showNote: Boolean(v.observacion),
+        note: v.observacion || ''
+    }];
+
+    const addBtn = document.getElementById('btnAddGarment');
+    if (addBtn) addBtn.style.display = 'none';
+
+    renderModalItems();
+
     const btnSubmit = document.getElementById('btnSubmit');
-    if (btnSubmit) btnSubmit.innerHTML = '<i data-lucide="save"></i> Actualizar Venta';
-    document.getElementById('btnCancelEdit').style.display = "flex";
+    if (btnSubmit) {
+        btnSubmit.innerHTML = `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Actualizar Venta`;
+    }
+    const btnCancel = document.getElementById('btnCancelEdit');
+    if (btnCancel) btnCancel.style.display = 'inline-flex';
 
-    // Actualizar título del modal a "Editar Venta"
-    const modalTitle = document.querySelector('#modalNuevaVenta .calendar-modal-header h3');
-    if (modalTitle) modalTitle.innerHTML = '<i data-lucide="pencil" style="color:var(--primary);"></i> Editar Venta';
+    const modalTitle = document.getElementById('salesModalTitle');
+    if (modalTitle) modalTitle.textContent = 'Editar Venta';
 
-    // Abrir el modal con los valores prellenados
     if (typeof openVentaModal === 'function') openVentaModal();
     if (window.lucide) window.lucide.createIcons();
+}
+
+async function handleVentaSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+
+    const submitBtn = document.getElementById('btnSubmit');
+    const originalText = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Guardando...';
+    }
+
+    try {
+        const cliente = document.getElementById('cliente')?.value.trim();
+        const telefono = document.getElementById('telefono')?.value.trim();
+        const ciudad = document.getElementById('ciudad')?.value.trim();
+        const direccion = document.getElementById('direccion')?.value.trim();
+
+        if (!cliente || !telefono || !ciudad || !direccion) {
+            showToast('Por favor completa teléfono, nombre, ciudad y dirección');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+            return;
+        }
+
+        if (!modalItems.length) {
+            showToast('Agrega al menos un producto al pedido');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+            return;
+        }
+
+        const hasInvalidItem = modalItems.some(i => !i.name.trim() || Number(i.price) <= 0);
+        if (hasInvalidItem) {
+            showToast('Verifica que cada producto tenga nombre y precio de venta mayor a $0');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+            return;
+        }
+
+        const commonData = {
+            fecha: document.getElementById('fecha')?.value || new Date().toISOString().split('T')[0],
+            pais: document.getElementById('pais')?.value.trim() || 'Colombia',
+            ciudad: ciudad,
+            plataforma: document.getElementById('plataforma')?.value || 'Whatsapp',
+            cliente: cliente,
+            cedula: document.getElementById('cedula')?.value.trim() || '',
+            telefono: telefono,
+            email: document.getElementById('email')?.value.trim() || '',
+            direccion: direccion,
+            envio: document.getElementById('envio')?.value || 'Pago',
+            guia: document.getElementById('guia')?.value.trim() || '',
+            metodoPago: document.getElementById('paymentMethod')?.value || 'Nequi',
+            descuento: Number(document.getElementById('discountValue')?.value) || 0,
+            shippingValue: Number(document.getElementById('shippingValue')?.value) || 0,
+            shippingRealCost: Number(document.getElementById('shippingRealCost')?.value) || 0
+        };
+
+        const baseId = Date.now();
+        let idx = 0;
+
+        for (const item of modalItems) {
+            const prodNombre = item.name.trim();
+            let finalFoto = item.image || null;
+
+            if (!finalFoto) {
+                const existente = dbVentas.find(v => normalizar(v.producto) === normalizar(prodNombre) && v.foto && v.foto !== 'https://via.placeholder.com/50');
+                if (existente) finalFoto = existente.foto;
+            }
+
+            const data = {
+                id: editingId && modalItems.length === 1 ? editingId : (baseId + idx),
+                fecha: commonData.fecha,
+                producto: prodNombre,
+                talla: item.size || item.accType || 'Única',
+                observacion: item.note ? item.note.trim() : '',
+                pais: commonData.pais,
+                ciudad: commonData.ciudad,
+                plataforma: commonData.plataforma,
+                cliente: commonData.cliente,
+                cedula: commonData.cedula,
+                telefono: commonData.telefono,
+                email: commonData.email,
+                direccion: commonData.direccion,
+                envio: commonData.envio,
+                guia: commonData.guia,
+                costo: parseFloat(item.cost) || 0,
+                valor: parseFloat(item.price) || 0,
+                foto: finalFoto || 'https://via.placeholder.com/50',
+                estado: editingId && modalItems.length === 1 ? (dbVentas.find(x => x.id === editingId)?.estado || 'Sin enviar') : 'Sin enviar',
+                extra_data: {
+                    metodoPago: commonData.metodoPago,
+                    descuento: commonData.descuento,
+                    shippingValue: commonData.shippingValue,
+                    shippingRealCost: commonData.shippingRealCost,
+                    qty: item.qty || 1,
+                    categoria: item.type
+                }
+            };
+
+            await fetch('/api/ventas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (finalFoto) {
+                for (let v of dbVentas) {
+                    if (v.id !== data.id && normalizar(v.producto) === normalizar(prodNombre) && (!v.foto || v.foto === 'https://via.placeholder.com/50')) {
+                        v.foto = finalFoto;
+                        await fetch('/api/ventas', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(v)
+                        });
+                    }
+                }
+            }
+            idx++;
+        }
+
+        // Construir mensaje resumen formateado para WhatsApp
+        const totalToday = document.getElementById('footerTotal')?.textContent || '';
+        const shipTag = commonData.envio === 'Pago' ? `Envío Pago (${formatCOP(commonData.shippingValue)})` : `Contraentrega (${formatCOP(commonData.shippingValue)} al recibir)`;
+
+        const itemsSummary = modalItems.map((i, itIdx) => {
+            const qty = Math.max(1, Number(i.qty) || 1);
+            const lineTotal = (Number(i.price) || 0) * qty;
+            const detail = i.type === 'ropa' ? `Talla ${i.size}` : (i.accType === 'Otro' ? (i.accCustom || 'Otro') : i.accType);
+            const noteLine = i.note && i.note.trim() ? ` | Nota: ${i.note.trim()}` : '';
+            return `${itIdx + 1}. ${qty}x ${i.name} (${detail}) - ${formatCOP(lineTotal)}${noteLine}`;
+        }).join('\n');
+
+        lastOrderSummaryText = `*PEDIDO ${getStoreItemConfig().title.toUpperCase()}* 📦\n` +
+            `*Cliente:* ${commonData.cliente} (${commonData.telefono})\n` +
+            `*Destino:* ${commonData.ciudad} - ${commonData.direccion}\n` +
+            `*Canal:* ${commonData.plataforma} | *Pago:* ${commonData.metodoPago}\n` +
+            `*Productos:*\n${itemsSummary}\n` +
+            `*Envío:* ${shipTag}${commonData.guia ? ` | Guía: ${commonData.guia}` : ''}\n` +
+            `*Total a Cobrar Hoy:* ${totalToday}`;
+
+        cancelarEdicion();
+        await cargarDatos();
+        showToast('¡Venta guardada y sincronizada exitosamente!', true);
+    } catch (err) {
+        console.error('Error guardando venta:', err);
+        showToast('Error al guardar el registro');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
 }
 
 // --- TABLA Y EDICIÓN VENTAS ---
@@ -917,107 +1998,10 @@ document.addEventListener('DOMContentLoaded', () => {
         themeBtnDesktop.onclick = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     }
 
-    // Venta Form Submit
+    // Venta Form Submit (V2)
     const ventaForm = document.getElementById('ventaForm');
     if (ventaForm) {
-        ventaForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('btnSubmit');
-            const originalText = submitBtn.innerText;
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Guardando...";
-
-            try {
-                const garmentBlocks = document.querySelectorAll('.garment-block');
-                if (garmentBlocks.length === 0) {
-                    showToast("Agrega al menos una prenda");
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = originalText;
-                    return;
-                }
-
-                const commonData = {
-                    fecha: document.getElementById('fecha').value,
-                    pais: document.getElementById('pais').value.trim(),
-                    ciudad: document.getElementById('ciudad').value.trim(),
-                    plataforma: document.getElementById('plataforma').value,
-                    cliente: document.getElementById('cliente').value.trim(),
-                    cedula: document.getElementById('cedula').value.trim(),
-                    telefono: document.getElementById('telefono').value.trim(),
-                    email: document.getElementById('email').value.trim(),
-                    direccion: document.getElementById('direccion').value.trim(),
-                    envio: document.getElementById('envio').value,
-                    guia: document.getElementById('guia').value.trim()
-                };
-
-                const baseId = Date.now();
-                let idx = 0;
-
-                for (let block of garmentBlocks) {
-                    const prodNombre = block.querySelector('.garment-producto').value.trim();
-                    const blockFoto = block.dataset.foto || null;
-
-                    let finalFoto = blockFoto;
-                    if (!finalFoto) {
-                        const existente = dbVentas.find(v => normalizar(v.producto) === normalizar(prodNombre) && v.foto && v.foto !== "https://via.placeholder.com/50");
-                        if (existente) finalFoto = existente.foto;
-                    }
-
-                    const obsEl = block.querySelector('.garment-observacion');
-                    const data = {
-                        id: editingId && garmentBlocks.length === 1 ? editingId : (baseId + idx),
-                        fecha: commonData.fecha,
-                        producto: prodNombre,
-                        talla: block.querySelector('.garment-talla').value,
-                        observacion: obsEl ? obsEl.value.trim() : "",
-                        pais: commonData.pais,
-                        ciudad: commonData.ciudad,
-                        plataforma: commonData.plataforma,
-                        cliente: commonData.cliente,
-                        cedula: commonData.cedula,
-                        telefono: commonData.telefono,
-                        email: commonData.email,
-                        direccion: commonData.direccion,
-                        envio: commonData.envio,
-                        guia: commonData.guia,
-                        costo: parseFloat(block.querySelector('.garment-costo').value) || 0,
-                        valor: parseFloat(block.querySelector('.garment-venta').value) || 0,
-                        foto: finalFoto || "https://via.placeholder.com/50",
-                        estado: editingId && garmentBlocks.length === 1 ? dbVentas.find(x => x.id === editingId).estado : "pendiente"
-                    };
-
-                    await fetch('/api/ventas', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (blockFoto) {
-                        for (let v of dbVentas) {
-                            if (v.id !== data.id && normalizar(v.producto) === normalizar(prodNombre) && v.foto !== blockFoto) {
-                                v.foto = blockFoto;
-                                await fetch('/api/ventas', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(v)
-                                });
-                            }
-                        }
-                    }
-                    idx++;
-                }
-
-                cancelarEdicion();
-                await cargarDatos();
-                showToast("¡Registro guardado y sincronizado!");
-            } catch (err) {
-                console.error("Error guardando venta:", err);
-                showToast("Error al guardar registro");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = originalText;
-            }
-        };
+        ventaForm.onsubmit = handleVentaSubmit;
     }
 
     // Egreso Form Submit
