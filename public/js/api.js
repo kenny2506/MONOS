@@ -61,24 +61,21 @@ async function initBranding() {
 
         let title = 'Ventas Monos';
         let logo = '/Logo.png';
-        let statTallaLabel = 'Top Talla';
+        let statTallaLabel = 'GANANCIAS';
 
         if (isVinilos) {
             title = 'Ventas RedKat';
             logo = '/logo_vinilos.png';
-            statTallaLabel = 'Top Formato';
             document.documentElement.style.setProperty('--primary', '#ef4444');
             document.documentElement.style.setProperty('--primary-rgb', '239, 68, 68');
         } else if (isFlores) {
             title = 'Ventas Flores';
             logo = '/logo_flores.png';
-            statTallaLabel = 'Top Tipo';
             document.documentElement.style.setProperty('--primary', '#e11d48');
             document.documentElement.style.setProperty('--primary-rgb', '225, 29, 72');
         } else if (isTenis) {
             title = 'Ventas Tenis';
             logo = '/logo_tenis.png';
-            statTallaLabel = 'Top Talla / N°';
             document.documentElement.style.setProperty('--primary', '#0284c7');
             document.documentElement.style.setProperty('--primary-rgb', '2, 132, 199');
         }
@@ -88,7 +85,7 @@ async function initBranding() {
         document.getElementById('headerLogo').src = logo;
 
         const statLabelEl = document.getElementById('statTallaLabel');
-        if (statLabelEl) statLabelEl.innerText = statTallaLabel;
+        if (statLabelEl) statLabelEl.innerText = 'GANANCIAS';
 
         // Update favicon
         const favicon = document.querySelector('link[rel="icon"]');
