@@ -337,24 +337,27 @@ function setShippingMode(mode) {
 
     if (mode === 'Pago') {
         if (btnPago) {
-            btnPago.style.background = '#1e293b';
-            btnPago.style.color = '#ffffff';
-            btnPago.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+            btnPago.style.background = 'var(--sm-item-num-bg)';
+            btnPago.style.color = 'var(--sm-item-num-text)';
+            btnPago.style.border = 'none';
+            btnPago.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
         }
         if (btnCod) {
             btnCod.style.background = 'transparent';
-            btnCod.style.color = '#94a3b8';
+            btnCod.style.color = 'var(--sm-text-muted)';
+            btnCod.style.border = 'none';
             btnCod.style.boxShadow = 'none';
         }
     } else {
         if (btnCod) {
             btnCod.style.background = 'rgba(245, 158, 11, 0.2)';
-            btnCod.style.color = '#fde68a';
+            btnCod.style.color = '#d97706';
             btnCod.style.border = '1px solid rgba(245, 158, 11, 0.4)';
         }
         if (btnPago) {
             btnPago.style.background = 'transparent';
-            btnPago.style.color = '#94a3b8';
+            btnPago.style.color = 'var(--sm-text-muted)';
+            btnPago.style.border = 'none';
             btnPago.style.boxShadow = 'none';
         }
     }
@@ -582,8 +585,8 @@ function buildCatalogDropdownHTML(itemId, filterQuery = '') {
 
     if (!matches.length) {
         return `
-            <div style="padding:10px 14px; font-size:11px; color:#94a3b8;">
-                Producto nuevo: <strong style="color:#ffffff;">"${escapeAttr(filterQuery)}"</strong> — ingresa costo y venta abajo.
+            <div style="padding:10px 14px; font-size:11px; color:var(--sm-text-muted);">
+                Producto nuevo: <strong style="color:var(--sm-text);">"${escapeAttr(filterQuery)}"</strong> — ingresa costo y venta abajo.
             </div>
         `;
     }
@@ -591,12 +594,12 @@ function buildCatalogDropdownHTML(itemId, filterQuery = '') {
     return matches.map(prod => `
         <button type="button" onmousedown="selectCatalogProduct(${itemId}, '${escapeAttr(prod.name)}')" class="sm-catalog-row">
             <div style="min-width:0; display:flex; align-items:center; gap:8px;">
-                <span style="font-size:12px; font-weight:700; color:#f1f5f9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeAttr(prod.name)}</span>
-                <span style="padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; text-transform:uppercase; background:rgba(99, 102, 241, 0.15); color:#a5b4fc; border:1px solid rgba(99, 102, 241, 0.3);">${escapeAttr(prod.tag || 'Item')}</span>
+                <span style="font-size:12px; font-weight:700; color:var(--sm-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeAttr(prod.name)}</span>
+                <span style="padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; text-transform:uppercase; background:rgba(99, 102, 241, 0.15); color:#818cf8; border:1px solid rgba(99, 102, 241, 0.3);">${escapeAttr(prod.tag || 'Item')}</span>
             </div>
             <div style="text-align:right; flex-shrink:0;">
-                <span style="display:block; font-size:12px; font-weight:700; color:#34d399;">${formatCOP(prod.price)}</span>
-                <span style="display:block; font-size:10px; color:#64748b;">Costo: ${formatCOP(prod.cost)}</span>
+                <span style="display:block; font-size:12px; font-weight:700; color:#10b981;">${formatCOP(prod.price)}</span>
+                <span style="display:block; font-size:10px; color:var(--sm-text-muted);">Costo: ${formatCOP(prod.cost)}</span>
             </div>
         </button>
     `).join('');
@@ -632,28 +635,28 @@ function renderModalItems() {
                         ÍTEM #${idx + 1} • ${isRopa ? cfg.cat1.toUpperCase() : cfg.cat2.toUpperCase()}
                     </span>
                     ${qty > 1 ? `
-                    <span style="padding:2px 8px; border-radius:6px; background:#1e293b; border:1px solid #334155; font-size:11px; font-weight:800; color:#ffffff;">
+                    <span style="padding:2px 8px; border-radius:6px; background:var(--sm-item-num-bg); border:1px solid var(--sm-card-border); font-size:11px; font-weight:800; color:var(--sm-item-num-text);">
                         ${qty} uds • ${formatCOP(lineSubtotal)}
                     </span>` : ''}
                 </div>
 
                 <div style="display:flex; align-items:center; gap:8px;">
                     <!-- Switch Categoría -->
-                    <div style="display:inline-flex; padding:2px; border-radius:10px; background:#0b0e16; border:1px solid #1e2536;">
+                    <div style="display:inline-flex; padding:2px; border-radius:10px; background:var(--sm-switch-bg); border:1px solid var(--sm-switch-border);">
                         <button type="button" onclick="changeItemType(${item.id}, 'ropa')" style="padding:4px 10px; border-radius:7px; border:none; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s ease; ${
-                            isRopa ? 'background:#4f46e5; color:#ffffff; box-shadow:0 1px 4px rgba(79, 70, 229, 0.4);' : 'background:transparent; color:#94a3b8;'
+                            isRopa ? 'background:#4f46e5; color:#ffffff; box-shadow:0 1px 4px rgba(79, 70, 229, 0.4);' : 'background:transparent; color:var(--sm-text-muted);'
                         }">
                             ${cfg.cat1}
                         </button>
                         <button type="button" onclick="changeItemType(${item.id}, 'accesorio')" style="padding:4px 10px; border-radius:7px; border:none; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s ease; ${
-                            !isRopa ? 'background:#0891b2; color:#ffffff; box-shadow:0 1px 4px rgba(8, 145, 178, 0.4);' : 'background:transparent; color:#94a3b8;'
+                            !isRopa ? 'background:#0891b2; color:#ffffff; box-shadow:0 1px 4px rgba(8, 145, 178, 0.4);' : 'background:transparent; color:var(--sm-text-muted);'
                         }">
                             ${cfg.cat2}
                         </button>
                     </div>
 
                     ${modalItems.length > 1 ? `
-                    <button type="button" onclick="deleteItem(${item.id})" title="Eliminar este ítem" style="width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#64748b; background:transparent; border:none; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.color='#f43f5e'; this.style.background='rgba(244,63,94,0.1)';" onmouseout="this.style.color='#64748b'; this.style.background='transparent';">
+                    <button type="button" onclick="deleteItem(${item.id})" title="Eliminar este ítem" style="width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--sm-text-muted); background:transparent; border:none; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.color='#f43f5e'; this.style.background='rgba(244,63,94,0.1)';" onmouseout="this.style.color='var(--sm-text-muted)'; this.style.background='transparent';">
                         <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>` : ''}
                 </div>
@@ -677,7 +680,7 @@ function renderModalItems() {
                         placeholder="Buscar o escribir nombre del producto..."
                         class="sm-input has-icon"
                     >
-                    <button type="button" onmousedown="toggleProductDropdown(${item.id}, event)" tabindex="-1" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748b; cursor:pointer;">
+                    <button type="button" onmousedown="toggleProductDropdown(${item.id}, event)" tabindex="-1" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--sm-text-muted); cursor:pointer;">
                         <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                 </div>
@@ -726,18 +729,18 @@ function renderModalItems() {
                 <div>
                     <label class="sm-label">Foto del Producto <span class="opt">(Ctrl+V o clic)</span></label>
                     ${item.image ? `
-                        <div style="display:flex; align-items:center; gap:10px; background:#0b0e16; border:1px solid #1e2536; border-radius:12px; padding:6px 10px;">
-                            <div style="position:relative; width:44px; height:44px; border-radius:8px; overflow:hidden; border:1px solid #1e2536; background:#000; flex-shrink:0;">
+                        <div style="display:flex; align-items:center; gap:10px; background:var(--sm-input); border:1px solid var(--sm-input-border); border-radius:12px; padding:6px 10px;">
+                            <div style="position:relative; width:44px; height:44px; border-radius:8px; overflow:hidden; border:1px solid var(--sm-card-border); background:#000; flex-shrink:0;">
                                 <img src="${item.image}" alt="Preview" style="width:100%; height:100%; object-fit:cover;">
                                 <button type="button" onclick="clearItemImage(${item.id})" title="Quitar foto" style="position:absolute; top:2px; right:2px; width:16px; height:16px; border-radius:50%; background:rgba(0,0,0,0.8); color:#f1f5f9; border:none; cursor:pointer; font-size:10px; line-height:1; display:flex; align-items:center; justify-content:center;">×</button>
                             </div>
                             <div style="min-width:0; flex:1;">
-                                <p style="font-size:11px; font-weight:600; color:#34d399; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Imagen adjunta</p>
-                                <button type="button" onclick="openFileDialog(${item.id})" style="font-size:10px; color:#94a3b8; text-decoration:underline; background:none; border:none; cursor:pointer; padding:0; margin-top:2px;">Reemplazar</button>
+                                <p style="font-size:11px; font-weight:600; color:#10b981; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Imagen adjunta</p>
+                                <button type="button" onclick="openFileDialog(${item.id})" style="font-size:10px; color:var(--sm-text-muted); text-decoration:underline; background:none; border:none; cursor:pointer; padding:0; margin-top:2px;">Reemplazar</button>
                             </div>
                         </div>
                     ` : `
-                        <button type="button" onclick="openFileDialog(${item.id})" style="width:100%; height:38px; display:flex; align-items:center; justify-content:center; gap:8px; background:#0b0e16; border:1px dashed #1e2536; border-radius:12px; color:#94a3b8; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.borderColor='#3b82f6'; this.style.color='#f1f5f9';" onmouseout="this.style.borderColor='#1e2536'; this.style.color='#94a3b8';">
+                        <button type="button" onclick="openFileDialog(${item.id})" style="width:100%; height:38px; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--sm-input); border:1px dashed var(--sm-input-border); border-radius:12px; color:var(--sm-text-muted); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.borderColor='var(--sm-input-focus)'; this.style.color='var(--sm-text)';" onmouseout="this.style.borderColor='var(--sm-input-border)'; this.style.color='var(--sm-text-muted)';">
                             <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                             Subir o pegar imagen (Ctrl+V)
                         </button>
@@ -750,17 +753,17 @@ function renderModalItems() {
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; padding-top:4px;">
                 <div>
                     <label class="sm-label">Cantidad</label>
-                    <div style="height:38px; display:flex; align-items:center; justify-content:space-between; background:#0b0e16; border:1px solid #1e2536; border-radius:12px; padding:0 6px;">
-                        <button type="button" onclick="changeItemQty(${item.id}, -1)" style="width:26px; height:26px; border-radius:6px; background:#1e293b; border:none; color:#ffffff; font-size:14px; font-weight:700; cursor:pointer;">−</button>
-                        <span style="font-size:13px; font-weight:800; color:#ffffff;">${qty}</span>
-                        <button type="button" onclick="changeItemQty(${item.id}, 1)" style="width:26px; height:26px; border-radius:6px; background:#1e293b; border:none; color:#ffffff; font-size:14px; font-weight:700; cursor:pointer;">+</button>
+                    <div style="height:38px; display:flex; align-items:center; justify-content:space-between; background:var(--sm-counter-bg); border:1px solid var(--sm-counter-border); border-radius:12px; padding:0 6px;">
+                        <button type="button" onclick="changeItemQty(${item.id}, -1)" style="width:26px; height:26px; border-radius:6px; background:var(--sm-counter-btn); border:none; color:var(--sm-counter-btn-text); font-size:14px; font-weight:700; cursor:pointer;">−</button>
+                        <span style="font-size:13px; font-weight:800; color:var(--sm-text);">${qty}</span>
+                        <button type="button" onclick="changeItemQty(${item.id}, 1)" style="width:26px; height:26px; border-radius:6px; background:var(--sm-counter-btn); border:none; color:var(--sm-counter-btn-text); font-size:14px; font-weight:700; cursor:pointer;">+</button>
                     </div>
                 </div>
 
                 <div>
                     <label class="sm-label">Costo Unit.</label>
                     <div class="sm-input-wrap">
-                        <span class="sm-input-icon" style="color:#64748b; font-weight:700; font-size:12px;">$</span>
+                        <span class="sm-input-icon" style="color:var(--sm-text-muted); font-weight:700; font-size:12px;">$</span>
                         <input type="number" min="0" step="500" value="${item.cost || ''}" placeholder="0" oninput="updateItemAmount(${item.id}, 'cost', this.value)" class="sm-input" style="padding-left:26px;">
                     </div>
                 </div>
@@ -768,7 +771,7 @@ function renderModalItems() {
                 <div>
                     <label class="sm-label">Venta Unit. <span class="req">*</span></label>
                     <div class="sm-input-wrap">
-                        <span class="sm-input-icon" style="color:#64748b; font-weight:700; font-size:12px;">$</span>
+                        <span class="sm-input-icon" style="color:var(--sm-text-muted); font-weight:700; font-size:12px;">$</span>
                         <input type="number" min="0" step="500" value="${item.price || ''}" placeholder="0" oninput="updateItemAmount(${item.id}, 'price', this.value)" class="sm-input" style="padding-left:26px; font-weight:700;">
                     </div>
                 </div>
@@ -781,23 +784,23 @@ function renderModalItems() {
                 </div>
             </div>
 
-            <!-- Observación / Nota Especial en Ámbar -->
+            <!-- Observación / Nota Especial -->
             <div>
                 ${!item.showNote ? `
-                    <button type="button" onclick="toggleItemNote(${item.id})" style="display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:8px; background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3); font-size:11px; font-weight:700; color:#fde68a; cursor:pointer;">
+                    <button type="button" onclick="toggleItemNote(${item.id})" style="display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:8px; background:var(--sm-note-bg); border:1px solid var(--sm-note-border); font-size:11px; font-weight:700; color:var(--sm-note-text); cursor:pointer;">
                         <svg style="width:14px; height:14px; color:#f59e0b; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         + Agregar nota o instrucción especial
                     </button>
                 ` : `
-                    <div style="background:rgba(245, 158, 11, 0.08); border:1px solid rgba(245, 158, 11, 0.5); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+                    <div style="background:var(--sm-note-bg); border:1px solid var(--sm-note-border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;">
                         <div style="display:flex; align-items:center; justify-content:space-between;">
-                            <label style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; text-transform:uppercase; color:#fde68a;">
+                            <label style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; text-transform:uppercase; color:var(--sm-note-text);">
                                 <svg style="width:14px; height:14px; color:#f59e0b; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                 Observación / Nota Especial Importante
                             </label>
-                            <button type="button" onclick="toggleItemNote(${item.id})" style="font-size:11px; color:#fde68a; opacity:0.8; text-decoration:underline; background:none; border:none; cursor:pointer;">Ocultar</button>
+                            <button type="button" onclick="toggleItemNote(${item.id})" style="font-size:11px; color:var(--sm-note-text); opacity:0.85; text-decoration:underline; background:none; border:none; cursor:pointer;">Ocultar</button>
                         </div>
-                        <textarea rows="2" oninput="updateItemNote(${item.id}, this.value)" placeholder="Ej. Estampado espalda DTF, tarjeta de regalo, empaque especial..." class="sm-input" style="background:#13110a; border-color:rgba(245, 158, 11, 0.4); color:#fef3c7; height:auto; resize:vertical;">${escapeAttr(item.note)}</textarea>
+                        <textarea rows="2" oninput="updateItemNote(${item.id}, this.value)" placeholder="Ej. Estampado espalda DTF, tarjeta de regalo, empaque especial..." class="sm-input" style="background:var(--sm-note-input); border-color:var(--sm-note-border); color:var(--sm-text); height:auto; resize:vertical;">${escapeAttr(item.note)}</textarea>
                     </div>
                 `}
             </div>
@@ -853,12 +856,12 @@ function updateSummaryFooter() {
     if (shippingMode === 'Pago') {
         totalToday += shippingCharged;
         if (footerShipping) {
-            footerShipping.style.color = '#e2e8f0';
+            footerShipping.style.color = 'var(--sm-text)';
             footerShipping.textContent = formatCOP(shippingCharged);
         }
     } else {
         if (footerShipping) {
-            footerShipping.style.color = '#fde68a';
+            footerShipping.style.color = '#f59e0b';
             footerShipping.textContent = `${formatCOP(shippingCharged)} (Contraentrega)`;
         }
     }

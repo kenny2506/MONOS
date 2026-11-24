@@ -994,12 +994,8 @@
                 </div>
 
                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                    <button type="button" onclick="runQuickDemo()" style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:8px; background:#0f131c; border:1px solid #1e2536; font-size:11px; font-weight:600; color:#94a3b8; cursor:pointer;" class="btn-demo-hover">
-                        <span style="width:6px; height:6px; border-radius:50%; background:#34d399;"></span>
-                        Demo Rápida
-                    </button>
-                    <button type="button" onclick="_closeVentaModal()" title="Cerrar modal" style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#94a3b8; background:transparent; border:none; cursor:pointer; font-size:18px;">
-                        &times;
+                    <button type="button" onclick="_closeVentaModal()" title="Cerrar modal" class="sm-close-btn" aria-label="Cerrar modal">
+                        <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
             </header>
@@ -1210,9 +1206,9 @@
                         <div class="sm-section-header">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <span class="sm-section-title">2. Productos del Pedido</span>
-                                <span id="itemsBadge" style="padding:2px 8px; border-radius:6px; background:#0f131c; border:1px solid #1e2536; font-size:10px; font-weight:700; color:#c7d2fe;">1 ítem</span>
+                                <span id="itemsBadge" style="padding:2px 8px; border-radius:6px; background:var(--sm-switch-bg); border:1px solid var(--sm-switch-border); font-size:10px; font-weight:700; color:var(--sm-text);">1 ítem</span>
                             </div>
-                            <button type="button" id="btnAddGarment" onclick="addNewItem()" style="display:inline-flex; align-items:center; gap:4px; background:none; border:none; font-size:12px; font-weight:700; color:#34d399; cursor:pointer;">
+                            <button type="button" id="btnAddGarment" onclick="addNewItem()" style="display:inline-flex; align-items:center; gap:4px; background:none; border:none; font-size:12px; font-weight:700; color:#10b981; cursor:pointer;">
                                 <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                 Agregar otro ítem
                             </button>
@@ -1233,11 +1229,11 @@
                                 <div>
                                     <label class="sm-label">Modalidad de Envío <span class="req">*</span></label>
                                     <input type="hidden" id="envio" value="Pago">
-                                    <div style="display:grid; grid-template-columns: 1fr 1fr; padding:3px; border-radius:12px; background:#0b0e16; border:1px solid #1e2536;">
-                                        <button type="button" id="modePagoBtn" onclick="setShippingMode('Pago')" style="padding:8px; border-radius:9px; border:none; font-size:11px; font-weight:700; cursor:pointer; background:#1e293b; color:#ffffff; transition:all 0.2s ease;">
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr; padding:3px; border-radius:12px; background:var(--sm-switch-bg); border:1px solid var(--sm-switch-border);">
+                                        <button type="button" id="modePagoBtn" onclick="setShippingMode('Pago')" style="padding:8px; border-radius:9px; border:none; font-size:11px; font-weight:700; cursor:pointer; background:var(--sm-item-num-bg); color:var(--sm-item-num-text); transition:all 0.2s ease;">
                                             Envío Pago <span style="font-weight:400; opacity:0.7;">(Hoy)</span>
                                         </button>
-                                        <button type="button" id="modeContraentregaBtn" onclick="setShippingMode('Contraentrega')" style="padding:8px; border-radius:9px; border:none; font-size:11px; font-weight:700; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s ease;">
+                                        <button type="button" id="modeContraentregaBtn" onclick="setShippingMode('Contraentrega')" style="padding:8px; border-radius:9px; border:none; font-size:11px; font-weight:700; cursor:pointer; background:transparent; color:var(--sm-text-muted); transition:all 0.2s ease;">
                                             Contraentrega
                                         </button>
                                     </div>
@@ -1247,31 +1243,31 @@
                                     <div>
                                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                                             <label class="sm-label" style="margin:0;">Envío Cobrado</label>
-                                            <span style="padding:1px 6px; border-radius:4px; background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.2); font-size:9px; font-weight:700; color:#34d399;">Auto</span>
+                                            <span style="padding:1px 6px; border-radius:4px; background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.2); font-size:9px; font-weight:700; color:#10b981;">Auto</span>
                                         </div>
                                         <div class="sm-input-wrap">
-                                            <span class="sm-input-icon" style="color:#64748b; font-weight:700; font-size:12px;">$</span>
+                                            <span class="sm-input-icon" style="color:var(--sm-text-muted); font-weight:700; font-size:12px;">$</span>
                                             <input type="number" id="shippingValue" value="16500" min="0" step="500" oninput="onShippingManualEdit()" class="sm-input" style="padding-left:26px; font-weight:700;">
                                         </div>
-                                        <p id="shippingRuleCaption" style="font-size:10px; color:#64748b; margin:4px 0 0 0;">Tarifa Ciudad Principal</p>
+                                        <p id="shippingRuleCaption" style="font-size:10px; color:var(--sm-text-muted); margin:4px 0 0 0;">Tarifa Ciudad Principal</p>
                                     </div>
 
                                     <div>
                                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                                             <label class="sm-label" style="margin:0;">Costo Real Guía</label>
-                                            <span id="shippingSpreadBadge" style="font-size:10px; font-weight:700; color:#34d399;">+$4.000</span>
+                                            <span id="shippingSpreadBadge" style="font-size:10px; font-weight:700; color:#10b981;">+$4.000</span>
                                         </div>
                                         <div class="sm-input-wrap">
-                                            <span class="sm-input-icon" style="color:#64748b; font-weight:700; font-size:12px;">$</span>
+                                            <span class="sm-input-icon" style="color:var(--sm-text-muted); font-weight:700; font-size:12px;">$</span>
                                             <input type="number" id="shippingRealCost" value="12500" min="0" step="500" oninput="updateSummaryFooter()" class="sm-input" style="padding-left:26px; font-weight:700;">
                                         </div>
-                                        <p style="font-size:10px; color:#64748b; margin:4px 0 0 0;">Costo transportadora</p>
+                                        <p style="font-size:10px; color:var(--sm-text-muted); margin:4px 0 0 0;">Costo transportadora</p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Fila 2: Número de Guía + Método de Pago + Descuento -->
-                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; padding-top:10px; border-top:1px solid rgba(30, 37, 54, 0.6);">
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; padding-top:10px; border-top:1px solid var(--sm-card-border);">
                                 <div>
                                     <label class="sm-label">Número de Guía <span class="opt">(Opcional)</span></label>
                                     <div class="sm-input-wrap">
@@ -1301,7 +1297,7 @@
                                 <div>
                                     <label class="sm-label">Descuento <span class="opt">(Opcional)</span></label>
                                     <div class="sm-input-wrap">
-                                        <span class="sm-input-icon" style="color:#64748b; font-weight:700; font-size:12px;">$</span>
+                                        <span class="sm-input-icon" style="color:var(--sm-text-muted); font-weight:700; font-size:12px;">$</span>
                                         <input type="number" id="discountValue" value="0" min="0" step="1000" oninput="updateSummaryFooter()" placeholder="0" class="sm-input" style="padding-left:26px;">
                                     </div>
                                 </div>
@@ -1346,18 +1342,18 @@
                         <div class="sm-chip-sep"></div>
                         <div class="sm-summary-chip">
                             <span class="sm-chip-label">Ganancia Real Neta</span>
-                            <span id="footerProfit" class="sm-chip-val" style="color:#34d399;">+$ 0</span>
+                            <span id="footerProfit" class="sm-chip-val" style="color:#10b981;">+$ 0</span>
                         </div>
                         <div class="sm-chip-sep"></div>
                         <div class="sm-summary-chip">
-                            <span class="sm-chip-label" style="color:#94a3b8;">Total a Cobrar Hoy</span>
-                            <span id="footerTotal" class="sm-chip-val" style="font-size:16px; font-weight:800; color:#ffffff;">$ 16.500</span>
+                            <span class="sm-chip-label" style="color:var(--sm-text-muted);">Total a Cobrar Hoy</span>
+                            <span id="footerTotal" class="sm-chip-val" style="font-size:16px; font-weight:800; color:var(--sm-text);">$ 16.500</span>
                         </div>
                     </div>
 
                     <!-- Botones de Acción -->
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <button type="button" id="btnCancelEdit" onclick="cancelarEdicion()" style="padding:9px 16px; border-radius:12px; border:1px solid #1e2536; background:transparent; color:#94a3b8; font-size:12px; font-weight:600; cursor:pointer;">
+                        <button type="button" id="btnCancelEdit" onclick="cancelarEdicion()" style="padding:9px 16px; border-radius:12px; border:1px solid var(--sm-btn-cancel-border); background:transparent; color:var(--sm-btn-cancel-text); font-size:12px; font-weight:600; cursor:pointer;">
                             Cancelar
                         </button>
                         <button type="submit" id="btnSubmit" style="padding:9px 20px; border-radius:12px; background:#10b981; border:none; color:#06080c; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 0 16px rgba(16, 185, 129, 0.25);">
