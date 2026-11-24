@@ -30,32 +30,34 @@ router.get('/tiendanube', (req, res) => {
     });
 });
 
+// Credenciales por defecto para Tiendanube
+const DEFAULT_CLIENT_ID = process.env.TIENDANUBE_CLIENT_ID || '53974';
+const DEFAULT_CLIENT_SECRET = process.env.TIENDANUBE_CLIENT_SECRET || '4ac25607dd19ded774f9ddb76e7ffc8464e4417b1be7795f';
+
 // Guardar temporalmente secrets de OAuth en memoria
 const oauthPendingSecrets = new Map();
+oauthPendingSecrets.set(DEFAULT_CLIENT_ID, { clientSecret: DEFAULT_CLIENT_SECRET, store: 'monos' });
 
 /**
  * GET /api/webhooks/tiendanube/connect
  * Inicia el flujo OAuth y redirige a Tiendanube con los permisos (scopes) correctos
  */
 router.get('/tiendanube/connect', (req, res) => {
-    const clientId = req.query.client_id || process.env.TIENDANUBE_CLIENT_ID;
-    const clientSecret = req.query.client_secret || process.env.TIENDANUBE_CLIENT_SECRET;
+    const clientId = req.query.client_id || DEFAULT_CLIENT_ID;
+    const clientSecret = req.query.client_secret || DEFAULT_CLIENT_SECRET;
     const store = (req.query.store || 'monos').toLowerCase();
 
-    if (!clientId) {
-        return res.status(400).send('<h3>Error: Falta el parámetro client_id</h3><p>Ejemplo: /api/webhooks/tiendanube/connect?client_id=1234&client_secret=abcd&store=monos</p>');
-    }
-
-    if (clientSecret) {
-        oauthPendingSecrets.set(String(clientId), { clientSecret, store });
-    }
+    oauthPendingSecrets.set(String(clientId), { clientSecret, store });
 
     const host = req.get('host');
     const protocol = req.protocol;
     const redirectUri = `${protocol}://${host}/api/webhooks/tiendanube/oauth`;
     const scopes = 'read_orders,read_products,read_customers';
-    const authUrl = `https://www.tiendanube.com/apps/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${store}`;
+    
+    // Tiendanube soporta tanto /apps/{id}/authorize como /apps/authorize?client_id=...
+    const authUrl = `https://www.tiendanube.com/apps/${clientId}/authorize`;
 
+    console.log(`[Tiendanube OAuth] Redirigiendo a autorización: ${authUrl}`);
     res.redirect(authUrl);
 });
 
@@ -77,15 +79,13 @@ router.get('/tiendanube/oauth', async (req, res) => {
     const store = (state || 'monos').toLowerCase();
     
     // Buscar client_id y client_secret
-    let clientId = process.env.TIENDANUBE_CLIENT_ID;
-    let clientSecret = process.env.TIENDANUBE_CLIENT_SECRET;
+    let clientId = DEFAULT_CLIENT_ID;
+    let clientSecret = DEFAULT_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
-        for (const [cId, data] of oauthPendingSecrets.entries()) {
-            clientId = cId;
-            clientSecret = data.clientSecret;
-            break;
-        }
+    for (const [cId, data] of oauthPendingSecrets.entries()) {
+        clientId = cId;
+        clientSecret = data.clientSecret;
+        break;
     }
 
     if (!clientId || !clientSecret) {
@@ -187,7 +187,7 @@ router.post('/tiendanube', async (req, res) => {
         console.log(`[Tiendanube Webhook] Recibida notificación para tienda "${targetStore}":`, JSON.stringify(payload).slice(0, 300));
 
         // 1. Validar firma HMAC si está configurada
-        const clientSecret = process.env[`TIENDANUBE_${targetStore.toUpperCase()}_CLIENT_SECRET`] || process.env.TIENDANUBE_CLIENT_SECRET;
+        const clientSecret = process.env[`TIENDANUBE_${targetStore.toUpperCase()}_CLIENT_SECRET`] || process.env.TIENDANUBE_CLIENT_SECRET || DEFAULT_CLIENT_SECRET;
         const hmacHeader = req.headers['x-linkedstore-hmac-sha256'];
         if (clientSecret && hmacHeader) {
             const rawBody = JSON.stringify(req.body);
