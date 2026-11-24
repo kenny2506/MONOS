@@ -210,4 +210,28 @@ router.post('/tiendanube/test', async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/webhooks/tiendanube/test
+ * Elimina las órdenes de prueba generadas por /test
+ */
+router.delete('/tiendanube/test', async (req, res) => {
+    try {
+        const targetStore = (req.query.store || 'monos').toLowerCase();
+        const { deleteVentaFromPG, appData, saveDB } = require('../config/db');
+        const storeData = appData[targetStore];
+        const testIds = ['TN-501-1', 'TN-501-2'];
+        
+        if (storeData) {
+            storeData.ventas = storeData.ventas.filter(v => !testIds.includes(String(v.id)));
+            for (const id of testIds) {
+                await deleteVentaFromPG(targetStore, id);
+            }
+            saveDB(targetStore);
+        }
+        res.json({ success: true, message: 'Ventas de prueba eliminadas correctamente.' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 module.exports = router;
