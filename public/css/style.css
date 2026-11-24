@@ -2700,14 +2700,14 @@ select.sm-input {
 
 /* Sticky Footer */
 .sm-footer {
-    padding: 14px 20px;
+    padding: 16px 24px;
     border-top: 1px solid var(--sm-border);
     background: var(--sm-footer-bg);
     backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
+    gap: 16px;
     flex-shrink: 0;
     flex-wrap: wrap;
     transition: background 0.3s ease, border-color 0.3s ease;
@@ -2715,7 +2715,7 @@ select.sm-input {
 .sm-footer-summary {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 18px;
     flex-wrap: wrap;
 }
 .sm-summary-chip {
@@ -2723,19 +2723,21 @@ select.sm-input {
     flex-direction: column;
 }
 .sm-chip-label {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--sm-text-muted);
-    line-height: 1.1;
-    font-weight: 600;
+    line-height: 1.2;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 .sm-chip-val {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 800;
     color: var(--sm-text);
-    margin-top: 2px;
+    margin-top: 3px;
 }
 .sm-chip-sep {
-    height: 24px;
+    height: 32px;
     width: 1px;
     background: var(--sm-chip-border);
 }

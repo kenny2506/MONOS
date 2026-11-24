@@ -1124,7 +1124,7 @@ function initGarmentsForm() {
 
     const btnSubmit = document.getElementById('btnSubmit');
     if (btnSubmit) {
-        btnSubmit.innerHTML = `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Registrar Venta`;
+        btnSubmit.innerHTML = `<svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Registrar Venta`;
     }
     const btnCancel = document.getElementById('btnCancelEdit');
     if (btnCancel) btnCancel.style.display = 'none';
@@ -1183,7 +1183,7 @@ function cancelarEdicion() {
 
     const btnSubmit = document.getElementById('btnSubmit');
     if (btnSubmit) {
-        btnSubmit.innerHTML = `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Registrar Venta`;
+        btnSubmit.innerHTML = `<svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Registrar Venta`;
     }
     const btnCancel = document.getElementById('btnCancelEdit');
     if (btnCancel) btnCancel.style.display = 'none';
@@ -1254,7 +1254,7 @@ function prepararEdicion(id) {
 
     const btnSubmit = document.getElementById('btnSubmit');
     if (btnSubmit) {
-        btnSubmit.innerHTML = `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Actualizar Venta`;
+        btnSubmit.innerHTML = `<svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Actualizar Venta`;
     }
     const btnCancel = document.getElementById('btnCancelEdit');
     if (btnCancel) btnCancel.style.display = 'inline-flex';
@@ -1600,7 +1600,26 @@ function refrescar() {
     const topCEl = document.getElementById('topC');
 
     if (topPEl) topPEl.innerText = getTopKey(counts.p);
-    if (topTEl) topTEl.innerText = getTopKey(counts.t);
+
+    // Calcular Ganancia del Mes Actual en dbVentas
+    const hoyMes = new Date();
+    const curMes = hoyMes.getMonth();
+    const curAno = hoyMes.getFullYear();
+    let gananciaMesActual = 0;
+
+    dbVentas.forEach(v => {
+        if (!v.fecha) return;
+        const fV = new Date(v.fecha + "T00:00:00");
+        if (!isNaN(fV.getTime()) && fV.getMonth() === curMes && fV.getFullYear() === curAno) {
+            gananciaMesActual += ((parseFloat(v.valor) || 0) - (parseFloat(v.costo) || 0));
+        }
+    });
+
+    if (topTEl) {
+        topTEl.innerText = formatCOP(gananciaMesActual);
+        topTEl.style.color = gananciaMesActual >= 0 ? '#10b981' : '#fb7185';
+    }
+
     if (topCEl) topCEl.innerText = getTopKey(counts.c);
 }
 
