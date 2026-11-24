@@ -24,11 +24,155 @@ router.get('/tiendanube', (req, res) => {
         api_token_configured: hasToken,
         webhook_url: `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube?store=${store}`,
         instructions: {
-            step_1: 'En Tiendanube o tu integrador (Make/Zapier/App), configura el webhook hacia esta URL.',
-            step_2: 'Selecciona el evento "Orden Pagada" (order/paid).',
-            step_3: 'Si usas el webhook nativo de Tiendanube, añade la variable de entorno TIENDANUBE_ACCESS_TOKEN en Railway o el parámetro ?token=TU_TOKEN en la URL.'
+            step_1: 'Crea la app en partners.tiendanube.com con Redirect URI: ' + `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube/oauth`,
+            step_2: 'Para conectar en 1 clic: ' + `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube/connect?client_id=TU_CLIENT_ID&client_secret=TU_CLIENT_SECRET&store=${store}`
         }
     });
+});
+
+// Guardar temporalmente secrets de OAuth en memoria
+const oauthPendingSecrets = new Map();
+
+/**
+ * GET /api/webhooks/tiendanube/connect
+ * Inicia el flujo OAuth y redirige a Tiendanube con los permisos (scopes) correctos
+ */
+router.get('/tiendanube/connect', (req, res) => {
+    const clientId = req.query.client_id || process.env.TIENDANUBE_CLIENT_ID;
+    const clientSecret = req.query.client_secret || process.env.TIENDANUBE_CLIENT_SECRET;
+    const store = (req.query.store || 'monos').toLowerCase();
+
+    if (!clientId) {
+        return res.status(400).send('<h3>Error: Falta el parámetro client_id</h3><p>Ejemplo: /api/webhooks/tiendanube/connect?client_id=1234&client_secret=abcd&store=monos</p>');
+    }
+
+    if (clientSecret) {
+        oauthPendingSecrets.set(String(clientId), { clientSecret, store });
+    }
+
+    const host = req.get('host');
+    const protocol = req.protocol;
+    const redirectUri = `${protocol}://${host}/api/webhooks/tiendanube/oauth`;
+    const scopes = 'read_orders,read_products,read_customers';
+    const authUrl = `https://www.tiendanube.com/apps/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${store}`;
+
+    res.redirect(authUrl);
+});
+
+/**
+ * GET /api/webhooks/tiendanube/oauth
+ * Callback de Tiendanube: intercambia code por access_token y registra webhook
+ */
+router.get('/tiendanube/oauth', async (req, res) => {
+    const { code, state, error, error_description } = req.query;
+
+    if (error) {
+        return res.status(400).send(`<h3>Error de autorización:</h3><p>${error_description || error}</p>`);
+    }
+
+    if (!code) {
+        return res.status(400).send('<h3>Error: No se recibió código de autorización de Tiendanube.</h3>');
+    }
+
+    const store = (state || 'monos').toLowerCase();
+    
+    // Buscar client_id y client_secret
+    let clientId = process.env.TIENDANUBE_CLIENT_ID;
+    let clientSecret = process.env.TIENDANUBE_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+        for (const [cId, data] of oauthPendingSecrets.entries()) {
+            clientId = cId;
+            clientSecret = data.clientSecret;
+            break;
+        }
+    }
+
+    if (!clientId || !clientSecret) {
+        return res.send(`
+            <div style="font-family:sans-serif; max-width:600px; margin:40px auto; padding:20px; border:1px solid #e2e8f0; border-radius:12px;">
+                <h2 style="color:#e11d48;">Código de autorización recibido</h2>
+                <p>Tu <strong>código de autorización</strong> es:</p>
+                <code style="background:#f1f5f9; padding:8px 12px; border-radius:6px; display:block; font-size:14px; word-break:break-all;">${code}</code>
+                <p style="margin-top:15px; color:#475569;">Copia este código y compártelo junto con tu <strong>Client ID</strong> y <strong>Client Secret</strong> para completar la activación.</p>
+            </div>
+        `);
+    }
+
+    try {
+        console.log('[Tiendanube OAuth] Intercambiando code por access_token...');
+        const tokenRes = await fetch('https://www.tiendanube.com/apps/authorize/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'authorization_code',
+                code: code
+            })
+        });
+
+        const tokenData = await tokenRes.json();
+        if (!tokenRes.ok || !tokenData.access_token) {
+            console.error('[Tiendanube OAuth] Error al obtener token:', tokenData);
+            return res.status(500).send(`<h3>Error obteniendo Access Token:</h3><pre>${JSON.stringify(tokenData, null, 2)}</pre>`);
+        }
+
+        console.log(`[Tiendanube OAuth] ¡Token obtenido exitosamente! Tienda ID: ${tokenData.user_id}`);
+
+        // Guardar token en appData y PostgreSQL
+        const { saveDB } = require('../config/db');
+        if (!appData[store]) appData[store] = { ventas: [], egresos: [], posts: [] };
+        if (!appData[store].config) appData[store].config = {};
+        appData[store].config.tiendanube = {
+            access_token: tokenData.access_token,
+            user_id: tokenData.user_id,
+            scope: tokenData.scope,
+            connected_at: new Date().toISOString()
+        };
+        saveDB(store, 'config', appData[store]);
+
+        // Registrar Webhook automáticamente en Tiendanube
+        const host = req.get('host');
+        const protocol = req.protocol;
+        const webhookUrl = `${protocol}://${host}/api/webhooks/tiendanube?store=${store}`;
+
+        try {
+            const whRes = await fetch(`https://api.tiendanube.com/v1/${tokenData.user_id}/webhooks`, {
+                method: 'POST',
+                headers: {
+                    'Authentication': `bearer ${tokenData.access_token}`,
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Monos Multitienda (contacto@monos.com)'
+                },
+                body: JSON.stringify({
+                    event: 'order/paid',
+                    url: webhookUrl
+                })
+            });
+            const whData = await whRes.json();
+            console.log('[Tiendanube OAuth] Registro automático de webhook resultado:', whData);
+        } catch (whErr) {
+            console.warn('[Tiendanube OAuth] Nota sobre registro de webhook:', whErr.message);
+        }
+
+        res.send(`
+            <div style="font-family:sans-serif; max-width:600px; margin:40px auto; padding:30px; border:1px solid #10b981; border-radius:16px; background:#f0fdf4; text-align:center;">
+                <h1 style="color:#059669; margin:0 0 10px 0;">¡Conexión Exitosa! 🎉</h1>
+                <p style="color:#065f46; font-size:16px;">Tu tienda de Tiendanube (ID: <strong>${tokenData.user_id}</strong>) ha sido vinculada exitosamente con <strong>Monos (${store.toUpperCase()})</strong>.</p>
+                <div style="background:#ffffff; border:1px solid #d1fae5; border-radius:12px; padding:15px; margin:20px 0; text-align:left; font-size:14px; color:#334155;">
+                    <p style="margin:4px 0;">✓ Permisos de lectura de pedidos activados (<code>${tokenData.scope || 'read_orders'}</code>)</p>
+                    <p style="margin:4px 0;">✓ Webhook de ventas pagadas configurado: <code>${webhookUrl}</code></p>
+                    <p style="margin:4px 0;">✓ Sincronización automática a PostgreSQL lista.</p>
+                </div>
+                <p style="color:#64748b; font-size:13px;">Ya puedes cerrar esta ventana. A partir de ahora, cada venta pagada se registrará automáticamente en tu gestor.</p>
+            </div>
+        `);
+
+    } catch (e) {
+        console.error('[Tiendanube OAuth] Error crítico:', e);
+        res.status(500).send(`<h3>Error en el proceso OAuth:</h3><p>${e.message}</p>`);
+    }
 });
 
 /**
