@@ -8,6 +8,7 @@ const { isAuthenticated } = require('./src/middleware/auth');
 const authRoutes = require('./src/routes/auth.routes');
 const apiRoutes = require('./src/routes/api.routes');
 const emailRoutes = require('./src/routes/email.routes');
+const webhookRoutes = require('./src/routes/webhook.routes');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -43,6 +44,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
 
 // Montar Rutas de Autenticación
 app.use('/', authRoutes);
+
+// Montar Rutas de Webhooks (Públicas para integraciones externas)
+app.use('/api/webhooks', webhookRoutes);
 
 // Montar Rutas API (Protegidas)
 app.use('/api/email', emailRoutes);

@@ -1200,7 +1200,7 @@ function cancelarEdicion() {
 
 function prepararEdicion(id) {
     editingId = id;
-    const v = Array.isArray(dbVentas) ? dbVentas.find(x => x.id === id) : null;
+    const v = Array.isArray(dbVentas) ? dbVentas.find(x => String(x.id) === String(id)) : null;
     if (!v) return;
 
     ['pais', 'ciudad', 'plataforma', 'cliente', 'cedula', 'telefono', 'email', 'direccion', 'envio', 'guia', 'fecha'].forEach(k => {
@@ -1477,10 +1477,10 @@ function refrescar() {
             <td data-label="Sel."><input type="checkbox" class="proveedor-checkbox" value="${v.id}" data-id="${v.id}" style="width:18px; height:18px; accent-color: var(--primary); cursor:pointer;" onchange="this.closest('tr').classList.toggle('selected', this.checked); const anyChecked = document.querySelectorAll('.proveedor-checkbox:checked').length > 0; const btnEl = document.getElementById('btnEliminarSel'); if(btnEl) btnEl.style.display = anyChecked ? 'inline-flex' : 'none'; const btnG = document.getElementById('btnGenerarGuia'); if(btnG) btnG.style.display = anyChecked ? 'inline-flex' : 'none'; const btnE = document.getElementById('btnEnviarProveedor'); if(btnE) btnE.style.display = (anyChecked && window._isMonosStore) ? 'inline-flex' : 'none';"></td>
             <td data-label="Img"><img src="${v.foto}" class="img-mini" onclick="previewImg(this.src)"></td>
             <td data-label="Prenda"><strong>${v.producto}</strong><br><small>${v.talla} • ${v.fecha ? v.fecha.split('-').reverse().join('/') : ''}</small>${obsAlertHtml}</td>
-            <td data-label="Cliente"><strong>${v.cliente}</strong> <small>(${v.cedula || 'S/N'})</small><br><small>${formatPhoneWhatsApp(v.telefono, v.cliente)} - ${v.email ? `<a href="javascript:void(0)" onclick="openEmailModal('${v.email.replace(/'/g, "\\'")}', '${(v.cliente || '').replace(/'/g, "\\'")}', ${v.id})" style="color:var(--primary); font-weight:700; text-decoration:underline; cursor:pointer;" title="Enviar correo a cliente"><i data-lucide="mail" style="width:12px; height:12px; display:inline; vertical-align:middle; margin-right:2px;"></i>${v.email}</a>` : '-'}</small><br><small>${v.plataforma || '-'} • ${v.ciudad}, ${v.pais || '-'}</small><br><small style="color:var(--text-muted); font-style:italic; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="map-pin" class="lucide-sm"></i> ${v.direccion || 'Sin dirección'}</small><br><small style="color:var(--primary); font-weight:800; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="package" class="lucide-sm"></i> Envío: ${v.envio || 'Por defecto'}</small>${v.guia ? `<br><small style="color:var(--success); font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="truck" class="lucide-sm"></i> Guía: ${v.guia}</small>` : ''}</td>
+            <td data-label="Cliente"><strong>${v.cliente}</strong> <small>(${v.cedula || 'S/N'})</small><br><small>${formatPhoneWhatsApp(v.telefono, v.cliente)} - ${v.email ? `<a href="javascript:void(0)" onclick="openEmailModal('${v.email.replace(/'/g, "\\'")}', '${(v.cliente || '').replace(/'/g, "\\'")}', '${v.id}')" style="color:var(--primary); font-weight:700; text-decoration:underline; cursor:pointer;" title="Enviar correo a cliente"><i data-lucide="mail" style="width:12px; height:12px; display:inline; vertical-align:middle; margin-right:2px;"></i>${v.email}</a>` : '-'}</small><br><small>${v.plataforma || '-'} • ${v.ciudad}, ${v.pais || '-'}</small><br><small style="color:var(--text-muted); font-style:italic; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="map-pin" class="lucide-sm"></i> ${v.direccion || 'Sin dirección'}</small><br><small style="color:var(--primary); font-weight:800; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="package" class="lucide-sm"></i> Envío: ${v.envio || 'Por defecto'}</small>${v.guia ? `<br><small style="color:var(--success); font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="truck" class="lucide-sm"></i> Guía: ${v.guia}</small>` : ''}</td>
             <td data-label="Utilidad" style="color:var(--success); font-weight:700;">$${(v.valor - v.costo).toLocaleString()}</td>
             <td data-label="Estado">
-                <select class="status-select st-${v.estado}" onchange="cambiarEstado(${v.id}, this.value)">
+                <select class="status-select st-${v.estado}" onchange="cambiarEstado('${v.id}', this.value)">
                     <option value="pendiente" ${v.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
                     <option value="enviado" ${v.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
                     <option value="entregado" ${v.estado === 'entregado' ? 'selected' : ''}>Entregado</option>
@@ -1489,8 +1489,8 @@ function refrescar() {
             </td>
             <td data-label="Acciones">
                 <div style="display:flex; gap:5px;">
-                    <button class="action-btn" onclick="prepararEdicion(${v.id})" title="Editar"><i data-lucide="pencil" class="lucide-sm"></i></button>
-                    <button class="action-btn btn-delete" onclick="eliminarVenta(${v.id})" title="Eliminar"><i data-lucide="trash-2" class="lucide-sm"></i></button>
+                    <button class="action-btn" onclick="prepararEdicion('${v.id}')" title="Editar"><i data-lucide="pencil" class="lucide-sm"></i></button>
+                    <button class="action-btn btn-delete" onclick="eliminarVenta('${v.id}')" title="Eliminar"><i data-lucide="trash-2" class="lucide-sm"></i></button>
                 </div>
             </td>
         </tr>
@@ -1612,7 +1612,7 @@ async function eliminarVenta(id) {
 }
 
 async function cambiarEstado(id, n) {
-    const v = dbVentas.find(x => x.id === id);
+    const v = dbVentas.find(x => String(x.id) === String(id));
     if (v) {
         v.estado = n;
         await fetch('/api/ventas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(v) });

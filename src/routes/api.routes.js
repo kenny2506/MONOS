@@ -70,7 +70,7 @@ router.post('/ventas', isAuthenticated, (req, res) => {
     const venta = req.body;
     const storeData = getStoreData(store);
 
-    const idx = storeData.ventas.findIndex(v => v.id === venta.id);
+    const idx = storeData.ventas.findIndex(v => String(v.id) === String(venta.id));
     if (idx >= 0) storeData.ventas[idx] = venta;
     else storeData.ventas.push(venta);
 
@@ -81,10 +81,10 @@ router.post('/ventas', isAuthenticated, (req, res) => {
 // DELETE /api/ventas/:id
 router.delete('/ventas/:id', isAuthenticated, (req, res) => {
     const store = req.session.user.store;
-    const id = parseInt(req.params.id) || req.params.id;
+    const id = req.params.id;
     const storeData = appData[store];
     if (storeData) {
-        storeData.ventas = storeData.ventas.filter(v => v.id !== id);
+        storeData.ventas = storeData.ventas.filter(v => String(v.id) !== String(id));
         saveDB(store, 'venta', id, true);
     }
     res.json({ success: true, ventas: storeData ? storeData.ventas : [] });
