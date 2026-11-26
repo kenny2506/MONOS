@@ -1477,7 +1477,7 @@ function refrescar() {
             <td data-label="Sel."><input type="checkbox" class="proveedor-checkbox" value="${v.id}" data-id="${v.id}" style="width:18px; height:18px; accent-color: var(--primary); cursor:pointer;" onchange="this.closest('tr').classList.toggle('selected', this.checked); const anyChecked = document.querySelectorAll('.proveedor-checkbox:checked').length > 0; const btnEl = document.getElementById('btnEliminarSel'); if(btnEl) btnEl.style.display = anyChecked ? 'inline-flex' : 'none'; const btnG = document.getElementById('btnGenerarGuia'); if(btnG) btnG.style.display = anyChecked ? 'inline-flex' : 'none'; const btnE = document.getElementById('btnEnviarProveedor'); if(btnE) btnE.style.display = (anyChecked && window._isMonosStore) ? 'inline-flex' : 'none';"></td>
             <td data-label="Img"><img src="${v.foto}" class="img-mini" onclick="previewImg(this.src)"></td>
             <td data-label="Prenda"><strong>${v.producto}</strong><br><small>${v.talla} • ${v.fecha ? v.fecha.split('-').reverse().join('/') : ''}</small>${obsAlertHtml}</td>
-            <td data-label="Cliente"><strong>${v.cliente}</strong> <small>(${v.cedula || 'S/N'})</small><br><small>${formatPhoneWhatsApp(v.telefono, v.cliente)} - ${v.email ? `<a href="javascript:void(0)" onclick="openEmailModal('${v.email.replace(/'/g, "\\'")}', '${(v.cliente || '').replace(/'/g, "\\'")}', '${v.id}')" style="color:var(--primary); font-weight:700; text-decoration:underline; cursor:pointer;" title="Enviar correo a cliente"><i data-lucide="mail" style="width:12px; height:12px; display:inline; vertical-align:middle; margin-right:2px;"></i>${v.email}</a>` : '-'}</small><br><small>${v.plataforma || '-'} • ${v.ciudad}, ${v.pais || '-'}</small><br><small style="color:var(--text-muted); font-style:italic; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="map-pin" class="lucide-sm"></i> ${v.direccion || 'Sin dirección'}</small><br><small style="color:var(--primary); font-weight:800; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="package" class="lucide-sm"></i> Envío: ${v.envio || 'Por defecto'}</small>${v.guia ? `<br><small style="color:var(--success); font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="truck" class="lucide-sm"></i> Guía: ${v.guia}</small>` : ''}</td>
+            <td data-label="Cliente"><strong>${v.cliente}</strong> <small>(${v.cedula || 'S/N'})</small><br><small>${formatPhoneWhatsApp(v.telefono, v.cliente)} - ${v.email ? `<a href="javascript:void(0)" onclick="openEmailModal('${v.email.replace(/'/g, "\\'")}', '${(v.cliente || '').replace(/'/g, "\\'")}', '${v.id}')" style="color:var(--primary); font-weight:700; text-decoration:underline; cursor:pointer;" title="Enviar correo a cliente"><i data-lucide="mail" style="width:12px; height:12px; display:inline; vertical-align:middle; margin-right:2px;"></i>${v.email}</a>` : '-'}</small><br><small>${v.plataforma || '-'} • ${v.ciudad}, ${v.pais || '-'}</small><br><small style="color:var(--text-muted); font-style:italic; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="map-pin" class="lucide-sm"></i> ${v.direccion || 'Sin dirección'}</small><br><small style="color:var(--primary); font-weight:800; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="package" class="lucide-sm"></i> Envío: ${v.envio || 'Por defecto'}</small>${v.guia ? `<br><button type="button" onclick="abrirModalRastreo('${escapeAttr(v.guia)}', '${escapeAttr(v.cliente || '')}', '${escapeAttr(v.telefono || '')}', '${escapeAttr(v.producto || '')}')" class="guia-tracking-pill" title="Rastrear paquete en 1 clic"><i data-lucide="truck" class="lucide-sm"></i> Guía: <strong>${v.guia}</strong> <span style="font-size:10px; opacity:0.85; margin-left:3px;">(Rastrear ↗)</span></button>` : ''}</td>
             <td data-label="Utilidad" style="color:var(--success); font-weight:700;">$${(v.valor - v.costo).toLocaleString()}</td>
             <td data-label="Estado">
                 <select class="status-select st-${v.estado}" onchange="cambiarEstado('${v.id}', this.value)">
@@ -2565,4 +2565,127 @@ function initInactivityTimeout(minutes = 30) {
             inactivityTimer = setTimeout(triggerLogout, remaining);
         }
     });
+}
+
+// ==========================================
+// RASTREO DE GUÍAS DE ENVÍO EN 1 CLIC (COLOMBIA)
+// ==========================================
+let _currentRastreo = { guia: '', cliente: '', telefono: '', producto: '' };
+
+function abrirModalRastreo(guia, cliente, telefono, producto) {
+    _currentRastreo = {
+        guia: String(guia || '').trim(),
+        cliente: String(cliente || '').trim(),
+        telefono: String(telefono || '').trim(),
+        producto: String(producto || '').trim()
+    };
+
+    const modal = document.getElementById('modalRastreoGuia');
+    const guiaEl = document.getElementById('modalRastreoGuiaNum');
+    const cliEl = document.getElementById('modalRastreoCliente');
+    const prodEl = document.getElementById('modalRastreoProducto');
+
+    if (guiaEl) guiaEl.textContent = _currentRastreo.guia || '-';
+    if (cliEl) cliEl.textContent = _currentRastreo.cliente || 'Cliente';
+    if (prodEl) prodEl.textContent = _currentRastreo.producto || 'Pedido';
+
+    if (modal) {
+        modal.style.display = 'flex';
+        if (window.lucide) window.lucide.createIcons();
+    }
+}
+
+function cerrarModalRastreo() {
+    const modal = document.getElementById('modalRastreoGuia');
+    if (modal) modal.style.display = 'none';
+}
+
+function copiarGuiaModal() {
+    const g = _currentRastreo.guia;
+    if (!g) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(g).then(() => {
+            showToast('📋 Guía copiada: ' + g);
+        }).catch(() => {
+            prompt('Copia el número de guía:', g);
+        });
+    } else {
+        prompt('Copia el número de guía:', g);
+    }
+}
+
+function abrirRastreoWeb(carrier) {
+    const g = (_currentRastreo.guia || '').trim();
+    if (!g) {
+        showToast('⚠️ No hay número de guía disponible');
+        return;
+    }
+
+    // Copiar al portapapeles automáticamente por comodidad
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(g).catch(() => {});
+    }
+
+    let url = '';
+    const enc = encodeURIComponent(g);
+
+    switch (carrier) {
+        case 'interrapidisimo':
+            url = `https://www.interrapidisimo.com/sigue-tu-envio/?guia=${enc}`;
+            break;
+        case 'servientrega':
+            url = `https://www.servientrega.com/wps/portal/rastreo-envio`;
+            break;
+        case 'coordinadora':
+            url = `https://www.coordinadora.com/portafolio-de-servicios/servicios-en-linea/rastrear-guias/?guia=${enc}`;
+            break;
+        case 'envia':
+            url = `https://envia.co/`;
+            break;
+        case 'tcc':
+            url = `https://tcc.com.co/rastreo/?guia=${enc}`;
+            break;
+        case 'google':
+        default:
+            url = `https://www.google.com/search?q=rastreo+guia+${enc}`;
+            break;
+    }
+
+    showToast(`🔍 Abriendo rastreo para guía ${g}...`);
+    window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function enviarGuiaWhatsAppModal() {
+    const g = _currentRastreo.guia;
+    const cli = _currentRastreo.cliente;
+    const tel = _currentRastreo.telefono;
+    const prod = _currentRastreo.producto;
+
+    if (!g) {
+        showToast('⚠️ No hay número de guía');
+        return;
+    }
+
+    let phoneClean = String(tel || '').replace(/\D/g, '');
+    if (phoneClean.length === 10 && phoneClean.startsWith('3')) {
+        phoneClean = '57' + phoneClean;
+    }
+
+    const saludo = cli ? `Hola ${cli}! 👋` : `Hola! 👋`;
+    const detalleProd = prod ? ` de tu pedido (${prod})` : ` de tu pedido`;
+    const mensaje = `${saludo} Te escribimos de Monos para confirmarte que tu paquete ya va en camino 📦\n\nNúmero de Guía: ${g}\n\nPuedes consultar el estado del envío con la transportadora. ¡Quedamos atentos a cualquier duda!`;
+
+    if (phoneClean) {
+        const waUrl = `https://wa.me/${phoneClean}?text=${encodeURIComponent(mensaje)}`;
+        window.open(waUrl, '_blank', 'noopener,noreferrer');
+    } else {
+        // Si no hay teléfono registrado, copiar el mensaje para que el usuario lo pegue donde quiera
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(mensaje).then(() => {
+                showToast('💬 Sin teléfono registrado. Mensaje copiado al portapapeles.');
+            });
+        } else {
+            prompt('Sin teléfono registrado. Copia el mensaje:', mensaje);
+        }
+    }
 }

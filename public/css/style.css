@@ -2756,3 +2756,48 @@ select.sm-input {
 .sm-animate-entry {
     animation: smSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Tracking Guías en 1 Clic */
+.guia-tracking-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 7px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-top: 4px;
+    text-align: left;
+}
+.guia-tracking-pill:hover {
+    background: rgba(16, 185, 129, 0.22);
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+.btn-carrier-tracking {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 8px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+    text-decoration: none;
+    gap: 2px;
+}
+.btn-carrier-tracking:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.btn-carrier-tracking:active {
+    transform: translateY(0);
+}

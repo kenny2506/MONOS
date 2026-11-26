@@ -5,7 +5,7 @@ const {
     processAndSaveOrder,
     verifyTiendanubeHmac
 } = require('../services/tiendanube.service');
-const { appData } = require('../config/db');
+const { appData, saveDB } = require('../config/db');
 
 /**
  * GET /api/webhooks/tiendanube
@@ -25,9 +25,148 @@ router.get('/tiendanube', (req, res) => {
         webhook_url: `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube?store=${store}`,
         instructions: {
             step_1: 'Crea la app en partners.tiendanube.com con Redirect URI: ' + `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube/oauth`,
-            step_2: 'Para conectar en 1 clic: ' + `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube/connect?client_id=TU_CLIENT_ID&client_secret=TU_CLIENT_SECRET&store=${store}`
+            step_2: 'Para conectar en 1 clic: ' + `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube/connect?client_id=TU_CLIENT_ID&client_secret=TU_CLIENT_SECRET&store=${store}`,
+            diagnostico: `${req.protocol}://${req.get('host')}/api/webhooks/tiendanube/diagnostico?store=${store}`
         }
     });
+});
+
+/**
+ * GET /api/webhooks/tiendanube/diagnostico
+ * Diagnóstico en vivo de conexión, permisos y webhooks registrados en Tiendanube
+ */
+router.get('/tiendanube/diagnostico', async (req, res) => {
+    const store = (req.query.store || 'monos').toLowerCase();
+    const envToken = process.env[`TIENDANUBE_${store.toUpperCase()}_ACCESS_TOKEN`] || process.env.TIENDANUBE_ACCESS_TOKEN;
+    const dbToken = appData[store]?.config?.tiendanube?.access_token;
+    const token = req.query.token || envToken || dbToken;
+    const userId = req.query.user_id || process.env[`TIENDANUBE_${store.toUpperCase()}_USER_ID`] || process.env.TIENDANUBE_USER_ID || appData[store]?.config?.tiendanube?.user_id || '7854757';
+
+    const diag = {
+        store,
+        token_configured: Boolean(token),
+        token_source: req.query.token ? 'query_param' : (envToken ? 'environment_variable' : (dbToken ? 'database_store_config' : 'none')),
+        tiendanube_user_id: userId,
+        webhooks_registered: [],
+        has_order_paid_webhook: false,
+        orders_scope_ok: false,
+        orders_scope_status: null,
+        message: ''
+    };
+
+    if (!token) {
+        diag.message = 'No hay Access Token configurado. Realiza la autorización en partners.tiendanube.com o configura TIENDANUBE_ACCESS_TOKEN.';
+        return res.json(diag);
+    }
+
+    try {
+        // 1. Consultar Webhooks registrados en Tiendanube
+        const whRes = await fetch(`https://api.tiendanube.com/v1/${userId}/webhooks`, {
+            headers: {
+                'Authentication': `bearer ${token}`,
+                'User-Agent': 'Monos Multitienda (contacto@monos.com)'
+            }
+        });
+        
+        diag.webhooks_http_status = whRes.status;
+        if (whRes.ok) {
+            diag.webhooks_registered = await whRes.json();
+            diag.has_order_paid_webhook = diag.webhooks_registered.some(w => w.event === 'order/paid');
+        } else {
+            diag.webhooks_error = await whRes.text();
+        }
+
+        // 2. Verificar permiso read_orders
+        const ordersRes = await fetch(`https://api.tiendanube.com/v1/${userId}/orders?limit=1`, {
+            headers: {
+                'Authentication': `bearer ${token}`,
+                'User-Agent': 'Monos Multitienda (contacto@monos.com)'
+            }
+        });
+        diag.orders_scope_status = ordersRes.status;
+        diag.orders_scope_ok = ordersRes.ok;
+        if (!ordersRes.ok) {
+            diag.orders_error = await ordersRes.text();
+        }
+
+        if (diag.orders_scope_ok && diag.has_order_paid_webhook) {
+            diag.message = '¡Integración con Tiendanube 100% activa y operativa! Las ventas pagadas se registrarán automáticamente.';
+        } else if (!diag.orders_scope_ok) {
+            diag.message = 'Falta el permiso read_orders en la App de Tiendanube. Habilítalo en partners.tiendanube.com y vuelve a autorizar.';
+        } else if (!diag.has_order_paid_webhook) {
+            diag.message = 'Token válido, pero aún no hay webhook order/paid registrado en Tiendanube. Puedes registrarlo con /api/webhooks/tiendanube/setup.';
+        }
+
+        res.json(diag);
+    } catch (err) {
+        diag.error = err.message;
+        res.status(500).json(diag);
+    }
+});
+
+/**
+ * ALL /api/webhooks/tiendanube/setup
+ * Registra o renueva el webhook de order/paid directamente en Tiendanube
+ */
+router.all('/tiendanube/setup', async (req, res) => {
+    const store = (req.query.store || req.body?.store || 'monos').toLowerCase();
+    const token = req.query.token || req.body?.access_token || process.env[`TIENDANUBE_${store.toUpperCase()}_ACCESS_TOKEN`] || process.env.TIENDANUBE_ACCESS_TOKEN || appData[store]?.config?.tiendanube?.access_token;
+    const userId = req.query.user_id || req.body?.user_id || process.env[`TIENDANUBE_${store.toUpperCase()}_USER_ID`] || process.env.TIENDANUBE_USER_ID || appData[store]?.config?.tiendanube?.user_id || '7854757';
+
+    if (!token) {
+        return res.status(400).json({
+            success: false,
+            error: 'Se requiere access_token para configurar el webhook.'
+        });
+    }
+
+    // Si viene token nuevo, guardarlo en PostgreSQL
+    if (req.body?.access_token || req.query.token) {
+        if (!appData[store]) appData[store] = { ventas: [], egresos: [], posts: [] };
+        if (!appData[store].config) appData[store].config = {};
+        appData[store].config.tiendanube = {
+            access_token: token,
+            user_id: userId,
+            updated_at: new Date().toISOString()
+        };
+        saveDB(store, 'config', appData[store]);
+    }
+
+    const host = req.get('host');
+    const protocol = req.protocol;
+    const webhookUrl = `${protocol}://${host}/api/webhooks/tiendanube?store=${store}`;
+
+    try {
+        const whRes = await fetch(`https://api.tiendanube.com/v1/${userId}/webhooks`, {
+            method: 'POST',
+            headers: {
+                'Authentication': `bearer ${token}`,
+                'Content-Type': 'application/json',
+                'User-Agent': 'Monos Multitienda (contacto@monos.com)'
+            },
+            body: JSON.stringify({
+                event: 'order/paid',
+                url: webhookUrl
+            })
+        });
+
+        const data = await whRes.json();
+        if (!whRes.ok) {
+            return res.status(whRes.status).json({
+                success: false,
+                tiendanube_status: whRes.status,
+                error: data
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Webhook order/paid registrado exitosamente en Tiendanube',
+            webhook: data
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 // Credenciales por defecto para Tiendanube
