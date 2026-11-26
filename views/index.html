@@ -1408,12 +1408,11 @@
                                         </span>
                                         <select id="transportadora" class="sm-input has-icon">
                                             <option value="">Auto / Seleccionar...</option>
-                                            <option value="interrapidisimo">🚚 Inter Rapidísimo</option>
-                                            <option value="envia">🔴 Envía (Colvanes)</option>
-                                            <option value="servientrega">🟢 Servientrega</option>
-                                            <option value="coordinadora">🔵 Coordinadora</option>
-                                            <option value="tcc">🟡 TCC</option>
-                                            <option value="17track">⚡ 17TRACK (Universal)</option>
+                                            <option value="interrapidisimo">Inter Rapidísimo</option>
+                                            <option value="envia">Envía (Colvanes)</option>
+                                            <option value="servientrega">Servientrega</option>
+                                            <option value="coordinadora">Coordinadora</option>
+                                            <option value="tcc">TCC</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1515,13 +1514,15 @@
                                     style="padding:11px 18px; border-radius:12px; border:1px solid var(--sm-btn-cancel-border); background:transparent; color:var(--sm-btn-cancel-text); font-size:13px; font-weight:700; cursor:pointer;">
                                     Cancelar
                                 </button>
-                        <button type="submit" id="btnSubmit"
-                            style="padding:11px 24px; border-radius:12px; background:#10b981; border:none; color:#06080c; font-size:14px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 0 16px rgba(16, 185, 129, 0.3);">
-                            <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Registrar Venta
-                        </button>
+                                <button type="submit" id="btnSubmit"
+                                    style="padding:11px 24px; border-radius:12px; background:#10b981; border:none; color:#06080c; font-size:14px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 0 16px rgba(16, 185, 129, 0.3);">
+                                    <svg style="width:18px; height:18px;" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Registrar Venta
+                                </button>
                             </div>
                 </footer>
             </form>
@@ -1529,31 +1530,44 @@
     </div>
 
     <!-- MODAL RASTREO DE GUÍAS DE TRANSPORTADORAS EN 1 CLIC -->
-    <div id="modalRastreoGuia" class="calendar-modal-mask" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center;" onclick="if(event.target===this) cerrarModalRastreo()">
-        <div class="glass-card" style="max-width:480px; width:92%; margin:auto; border-radius:18px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,0.6); border:1px solid var(--border); background:var(--card);">
+    <div id="modalRastreoGuia" class="calendar-modal-mask"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center;"
+        onclick="if(event.target===this) cerrarModalRastreo()">
+        <div class="glass-card"
+            style="max-width:480px; width:92%; margin:auto; border-radius:18px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,0.6); border:1px solid var(--border); background:var(--card);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="width:38px; height:38px; border-radius:10px; background:rgba(16, 185, 129, 0.15); color:#10b981; display:flex; align-items:center; justify-content:center;">
+                    <div
+                        style="width:38px; height:38px; border-radius:10px; background:rgba(16, 185, 129, 0.15); color:#10b981; display:flex; align-items:center; justify-content:center;">
                         <i data-lucide="truck" style="width:20px; height:20px;"></i>
                     </div>
                     <div>
                         <h3 style="margin:0; font-size:16px; font-weight:800;">Rastreo de Paquete</h3>
-                        <p style="margin:0; font-size:11px; color:var(--text-muted);">Consulta el estado oficial del envío en 1 clic</p>
+                        <p style="margin:0; font-size:11px; color:var(--text-muted);">Consulta el estado oficial del
+                            envío en 1 clic</p>
                     </div>
                 </div>
-                <button type="button" onclick="cerrarModalRastreo()" style="background:none; border:none; font-size:22px; color:var(--text-muted); cursor:pointer; line-height:1; padding:4px;">&times;</button>
+                <button type="button" onclick="cerrarModalRastreo()"
+                    style="background:none; border:none; font-size:22px; color:var(--text-muted); cursor:pointer; line-height:1; padding:4px;">&times;</button>
             </div>
 
             <!-- Datos de la Guía y Pedido -->
-            <div style="background:var(--bg); border:1px solid var(--card-border, var(--border)); border-radius:14px; padding:14px; margin-bottom:16px;">
+            <div
+                style="background:var(--bg); border:1px solid var(--card-border, var(--border)); border-radius:14px; padding:14px; margin-bottom:16px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-                    <span style="font-size:10px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.5px;">Número de Guía</span>
-                    <button type="button" onclick="copiarGuiaModal()" class="btn btn-outline" style="padding:3px 8px; font-size:11px; display:inline-flex; align-items:center; gap:4px; margin:0; border-radius:6px;">
+                    <span
+                        style="font-size:10px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.5px;">Número
+                        de Guía</span>
+                    <button type="button" onclick="copiarGuiaModal()" class="btn btn-outline"
+                        style="padding:3px 8px; font-size:11px; display:inline-flex; align-items:center; gap:4px; margin:0; border-radius:6px;">
                         <i data-lucide="copy" style="width:12px; height:12px;"></i> Copiar
                     </button>
                 </div>
-                <div id="modalRastreoGuiaNum" style="font-size:22px; font-weight:900; color:#10b981; letter-spacing:1px; word-break:break-all;">-</div>
-                <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:11px; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:8px; flex-wrap:wrap; gap:6px;">
+                <div id="modalRastreoGuiaNum"
+                    style="font-size:22px; font-weight:900; color:#10b981; letter-spacing:1px; word-break:break-all;">-
+                </div>
+                <div
+                    style="display:flex; justify-content:space-between; margin-top:10px; font-size:11px; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:8px; flex-wrap:wrap; gap:6px;">
                     <span>Cliente: <strong id="modalRastreoCliente" style="color:var(--text);">-</strong></span>
                     <span>Prenda: <strong id="modalRastreoProducto" style="color:var(--text);">-</strong></span>
                 </div>
@@ -1564,54 +1578,55 @@
                 <span style="font-size:11px; font-weight:700; color:var(--text-muted); white-space:nowrap;">Empresa asignada:</span>
                 <select id="modalSelectTransportadora" onchange="cambiarTransportadoraModal(this.value)" class="sm-input" style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; height:auto; width:auto; flex:1; max-width:220px;">
                     <option value="">Sin asignar (elegir abajo)</option>
-                    <option value="interrapidisimo">🚚 Inter Rapidísimo</option>
-                    <option value="envia">🔴 Envía (Colvanes)</option>
-                    <option value="servientrega">🟢 Servientrega</option>
-                    <option value="coordinadora">🔵 Coordinadora</option>
-                    <option value="tcc">🟡 TCC</option>
-                    <option value="17track">⚡ 17TRACK (Universal)</option>
+                    <option value="interrapidisimo">Inter Rapidísimo</option>
+                    <option value="envia">Envía (Colvanes)</option>
+                    <option value="servientrega">Servientrega</option>
+                    <option value="coordinadora">Coordinadora</option>
+                    <option value="tcc">TCC</option>
                 </select>
             </div>
 
-            <!-- Botón Destacado: Rastreo Automático Directo -->
-            <button type="button" onclick="abrirRastreoWeb('17track')" class="btn" style="width:100%; background:linear-gradient(135deg, #4f46e5, #6366f1); color:#ffffff; font-weight:800; font-size:12px; margin-bottom:14px; padding:11px; border-radius:12px; border:none; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-shadow:0 4px 14px rgba(79, 70, 229, 0.35);">
-                <i data-lucide="zap" style="width:16px; height:16px;"></i>
-                Rastreo Automático Directo (17TRACK - Sin copiar/pegar)
-            </button>
-
             <!-- Botones de Transportadoras -->
-            <p style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin:0 0 10px 0;">
-                O abrir seguimiento oficial (guía se copia al portapapeles):
+            <p
+                style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin:0 0 10px 0;">
+                Abrir consulta en la transportadora:
             </p>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
-                <button type="button" onclick="abrirRastreoWeb('interrapidisimo')" class="btn-carrier-tracking" style="background:#ea580c; color:#ffffff;">
-                    <span style="font-weight:800; font-size:13px;">🚚 Inter Rapidísimo</span>
+                <button type="button" onclick="abrirRastreoWeb('interrapidisimo')" class="btn-carrier-tracking"
+                    style="background:#ea580c; color:#ffffff;">
+                    <span style="font-weight:800; font-size:13px;">Inter Rapidísimo</span>
                     <small style="opacity:0.9; font-size:10px;">Rastreo directo</small>
                 </button>
-                <button type="button" onclick="abrirRastreoWeb('servientrega')" class="btn-carrier-tracking" style="background:#15803d; color:#ffffff;">
-                    <span style="font-weight:800; font-size:13px;">🟢 Servientrega</span>
+                <button type="button" onclick="abrirRastreoWeb('servientrega')" class="btn-carrier-tracking"
+                    style="background:#15803d; color:#ffffff;">
+                    <span style="font-weight:800; font-size:13px;">Servientrega</span>
                     <small style="opacity:0.9; font-size:10px;">Rastreo oficial</small>
                 </button>
-                <button type="button" onclick="abrirRastreoWeb('coordinadora')" class="btn-carrier-tracking" style="background:#0369a1; color:#ffffff;">
-                    <span style="font-weight:800; font-size:13px;">🔵 Coordinadora</span>
+                <button type="button" onclick="abrirRastreoWeb('coordinadora')" class="btn-carrier-tracking"
+                    style="background:#0369a1; color:#ffffff;">
+                    <span style="font-weight:800; font-size:13px;">Coordinadora</span>
                     <small style="opacity:0.9; font-size:10px;">Detalle de guía</small>
                 </button>
-                <button type="button" onclick="abrirRastreoWeb('envia')" class="btn-carrier-tracking" style="background:#b91c1c; color:#ffffff;">
-                    <span style="font-weight:800; font-size:13px;">🔴 Envía (Colvanes)</span>
+                <button type="button" onclick="abrirRastreoWeb('envia')" class="btn-carrier-tracking"
+                    style="background:#b91c1c; color:#ffffff;">
+                    <span style="font-weight:800; font-size:13px;">Envía (Colvanes)</span>
                     <small style="opacity:0.9; font-size:10px;">Rastreo en línea</small>
                 </button>
-                <button type="button" onclick="abrirRastreoWeb('tcc')" class="btn-carrier-tracking" style="background:#d97706; color:#ffffff;">
-                    <span style="font-weight:800; font-size:13px;">🟡 TCC</span>
+                <button type="button" onclick="abrirRastreoWeb('tcc')" class="btn-carrier-tracking"
+                    style="background:#d97706; color:#ffffff;">
+                    <span style="font-weight:800; font-size:13px;">TCC</span>
                     <small style="opacity:0.9; font-size:10px;">Consulta de guía</small>
                 </button>
-                <button type="button" onclick="abrirRastreoWeb('google')" class="btn-carrier-tracking" style="background:#475569; color:#ffffff;">
-                    <span style="font-weight:800; font-size:13px;">🔍 Búsqueda Web</span>
+                <button type="button" onclick="abrirRastreoWeb('google')" class="btn-carrier-tracking"
+                    style="background:#475569; color:#ffffff;">
+                    <span style="font-weight:800; font-size:13px;">Búsqueda Web</span>
                     <small style="opacity:0.9; font-size:10px;">Buscar en Google</small>
                 </button>
             </div>
 
             <!-- Acción Rápida: Avisar por WhatsApp -->
-            <button type="button" id="btnRastreoWhatsApp" onclick="enviarGuiaWhatsAppModal()" class="btn" style="width:100%; background:#25d366; color:#06080c; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:12px; border:none; box-shadow:0 0 16px rgba(37, 211, 102, 0.25); cursor:pointer;">
+            <button type="button" id="btnRastreoWhatsApp" onclick="enviarGuiaWhatsAppModal()" class="btn"
+                style="width:100%; background:#25d366; color:#06080c; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:12px; border:none; box-shadow:0 0 16px rgba(37, 211, 102, 0.25); cursor:pointer;">
                 <i data-lucide="message-circle" style="width:18px; height:18px;"></i>
                 Notificar Guía al Cliente por WhatsApp en 1 Clic
             </button>
