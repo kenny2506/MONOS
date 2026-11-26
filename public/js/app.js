@@ -1365,7 +1365,7 @@ async function handleVentaSubmit(e) {
                 costo: parseFloat(item.cost) || 0,
                 valor: parseFloat(item.price) || 0,
                 foto: finalFoto || 'https://via.placeholder.com/50',
-                estado: editingId && modalItems.length === 1 ? (dbVentas.find(x => x.id === editingId)?.estado || 'Sin enviar') : 'Sin enviar',
+                estado: editingId && modalItems.length === 1 ? (dbVentas.find(x => x.id === editingId)?.estado || 'pendiente') : 'pendiente',
                 extra_data: {
                     metodoPago: commonData.metodoPago,
                     descuento: commonData.descuento,

@@ -1190,16 +1190,17 @@
                                 <div>
                                     <label class="sm-label">País <span class="req">*</span></label>
                                     <div class="sm-input-wrap">
-                                        <select id="pais" onchange="evaluateShippingTariff(true)" class="sm-input">
-                                            <option value="Colombia" selected>Colombia</option>
-                                            <option value="Estados Unidos">Estados Unidos</option>
-                                            <option value="España">España</option>
-                                            <option value="México">México</option>
-                                            <option value="Chile">Chile</option>
-                                            <option value="Ecuador">Ecuador</option>
-                                            <option value="Perú">Perú</option>
-                                            <option value="Otro">Otro (Internacional)</option>
-                                        </select>
+                                        <input type="text" id="pais" required list="listaPaises" value="Colombia" onchange="evaluateShippingTariff(true)" oninput="evaluateShippingTariff(true)" placeholder="País..." class="sm-input">
+                                        <datalist id="listaPaises">
+                                            <option value="Colombia">
+                                            <option value="Estados Unidos">
+                                            <option value="España">
+                                            <option value="México">
+                                            <option value="Chile">
+                                            <option value="Ecuador">
+                                            <option value="Perú">
+                                            <option value="Otro (Internacional)">
+                                        </datalist>
                                     </div>
                                 </div>
 
@@ -1395,16 +1396,20 @@
                                                     d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                             </svg>
                                         </span>
-                                        <input type="text" id="guia" placeholder="Ej. 700199902205"
-                                            class="sm-input has-icon">
+                                        <input type="text" id="guia" placeholder="Ej. 700199902205" class="sm-input has-icon">
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="sm-label">Empresa / Transportadora <span class="opt">(Rastreo directo)</span></label>
+                                    <label class="sm-label">Empresa / Transportadora <span class="opt">(Rastreo
+                                            directo)</span></label>
                                     <div class="sm-input-wrap">
                                         <span class="sm-input-icon">
-                                            <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                                            <svg style="width:14px; height:14px;" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                            </svg>
                                         </span>
                                         <select id="transportadora" class="sm-input has-icon">
                                             <option value="">Auto / Seleccionar...</option>
@@ -1574,9 +1579,13 @@
             </div>
 
             <!-- Selector / Ajuste de Transportadora Asignada -->
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:var(--bg); border:1px solid var(--card-border, var(--border)); border-radius:10px; padding:8px 12px; gap:8px;">
-                <span style="font-size:11px; font-weight:700; color:var(--text-muted); white-space:nowrap;">Empresa asignada:</span>
-                <select id="modalSelectTransportadora" onchange="cambiarTransportadoraModal(this.value)" class="sm-input" style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; height:auto; width:auto; flex:1; max-width:220px;">
+            <div
+                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:var(--bg); border:1px solid var(--card-border, var(--border)); border-radius:10px; padding:8px 12px; gap:8px;">
+                <span style="font-size:11px; font-weight:700; color:var(--text-muted); white-space:nowrap;">Empresa
+                    asignada:</span>
+                <select id="modalSelectTransportadora" onchange="cambiarTransportadoraModal(this.value)"
+                    class="sm-input"
+                    style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; height:auto; width:auto; flex:1; max-width:220px;">
                     <option value="">Sin asignar (elegir abajo)</option>
                     <option value="interrapidisimo">Inter Rapidísimo</option>
                     <option value="envia">Envía (Colvanes)</option>
@@ -1589,6 +1598,7 @@
             <!-- Botones de Transportadoras -->
             <p
                 style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin:0 0 10px 0;">
+                Abrir seguimiento oficial de la transportadora:
                 Abrir consulta en la transportadora:
             </p>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">

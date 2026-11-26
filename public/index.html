@@ -1118,16 +1118,17 @@
                                 <div>
                                     <label class="sm-label">País <span class="req">*</span></label>
                                     <div class="sm-input-wrap">
-                                        <select id="pais" onchange="evaluateShippingTariff(true)" class="sm-input">
-                                            <option value="Colombia" selected>Colombia</option>
-                                            <option value="Estados Unidos">Estados Unidos</option>
-                                            <option value="España">España</option>
-                                            <option value="México">México</option>
-                                            <option value="Chile">Chile</option>
-                                            <option value="Ecuador">Ecuador</option>
-                                            <option value="Perú">Perú</option>
-                                            <option value="Otro">Otro (Internacional)</option>
-                                        </select>
+                                        <input type="text" id="pais" required list="listaPaises" value="Colombia" onchange="evaluateShippingTariff(true)" oninput="evaluateShippingTariff(true)" placeholder="País..." class="sm-input">
+                                        <datalist id="listaPaises">
+                                            <option value="Colombia">
+                                            <option value="Estados Unidos">
+                                            <option value="España">
+                                            <option value="México">
+                                            <option value="Chile">
+                                            <option value="Ecuador">
+                                            <option value="Perú">
+                                            <option value="Otro (Internacional)">
+                                        </datalist>
                                     </div>
                                 </div>
 
