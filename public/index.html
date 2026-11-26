@@ -1267,6 +1267,7 @@
                             </div>
 
                             <!-- Fila 2: Número de Guía + Método de Pago + Descuento -->
+                            <!-- Fila 2: Número de Guía + Transportadora + Método de Pago + Descuento -->
                             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; padding-top:10px; border-top:1px solid var(--sm-card-border);">
                                 <div>
                                     <label class="sm-label">Número de Guía <span class="opt">(Opcional)</span></label>
@@ -1274,7 +1275,25 @@
                                         <span class="sm-input-icon">
                                             <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                         </span>
-                                        <input type="text" id="guia" placeholder="Ej. 2400981234" class="sm-input has-icon">
+                                        <input type="text" id="guia" placeholder="Ej. 700199902205" class="sm-input has-icon">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="sm-label">Empresa / Transportadora <span class="opt">(Rastreo directo)</span></label>
+                                    <div class="sm-input-wrap">
+                                        <span class="sm-input-icon">
+                                            <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                                        </span>
+                                        <select id="transportadora" class="sm-input has-icon">
+                                            <option value="">Auto / Seleccionar...</option>
+                                            <option value="interrapidisimo">🚚 Inter Rapidísimo</option>
+                                            <option value="envia">🔴 Envía (Colvanes)</option>
+                                            <option value="servientrega">🟢 Servientrega</option>
+                                            <option value="coordinadora">🔵 Coordinadora</option>
+                                            <option value="tcc">🟡 TCC</option>
+                                            <option value="17track">⚡ 17TRACK (Universal)</option>
+                                        </select>
                                     </div>
                                 </div>
 
@@ -1397,9 +1416,29 @@
                 </div>
             </div>
 
+            <!-- Selector / Ajuste de Transportadora Asignada -->
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:var(--bg); border:1px solid var(--card-border, var(--border)); border-radius:10px; padding:8px 12px; gap:8px;">
+                <span style="font-size:11px; font-weight:700; color:var(--text-muted); white-space:nowrap;">Empresa asignada:</span>
+                <select id="modalSelectTransportadora" onchange="cambiarTransportadoraModal(this.value)" class="sm-input" style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; height:auto; width:auto; flex:1; max-width:220px;">
+                    <option value="">Sin asignar (elegir abajo)</option>
+                    <option value="interrapidisimo">🚚 Inter Rapidísimo</option>
+                    <option value="envia">🔴 Envía (Colvanes)</option>
+                    <option value="servientrega">🟢 Servientrega</option>
+                    <option value="coordinadora">🔵 Coordinadora</option>
+                    <option value="tcc">🟡 TCC</option>
+                    <option value="17track">⚡ 17TRACK (Universal)</option>
+                </select>
+            </div>
+
+            <!-- Botón Destacado: Rastreo Automático Directo -->
+            <button type="button" onclick="abrirRastreoWeb('17track')" class="btn" style="width:100%; background:linear-gradient(135deg, #4f46e5, #6366f1); color:#ffffff; font-weight:800; font-size:12px; margin-bottom:14px; padding:11px; border-radius:12px; border:none; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-shadow:0 4px 14px rgba(79, 70, 229, 0.35);">
+                <i data-lucide="zap" style="width:16px; height:16px;"></i>
+                Rastreo Automático Directo (17TRACK - Sin copiar/pegar)
+            </button>
+
             <!-- Botones de Transportadoras -->
             <p style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin:0 0 10px 0;">
-                Abrir seguimiento oficial de la transportadora:
+                O abrir seguimiento oficial (guía se copia al portapapeles):
             </p>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
                 <button type="button" onclick="abrirRastreoWeb('interrapidisimo')" class="btn-carrier-tracking" style="background:#ea580c; color:#ffffff;">

@@ -1203,7 +1203,7 @@ function prepararEdicion(id) {
     const v = Array.isArray(dbVentas) ? dbVentas.find(x => String(x.id) === String(id)) : null;
     if (!v) return;
 
-    ['pais', 'ciudad', 'plataforma', 'cliente', 'cedula', 'telefono', 'email', 'direccion', 'envio', 'guia', 'fecha'].forEach(k => {
+    ['pais', 'ciudad', 'plataforma', 'cliente', 'cedula', 'telefono', 'email', 'direccion', 'envio', 'guia', 'transportadora', 'fecha'].forEach(k => {
         const el = document.getElementById(k);
         if (el) el.value = v[k] || '';
     });
@@ -1211,9 +1211,13 @@ function prepararEdicion(id) {
     if (v.plataforma) selectChannel(v.plataforma);
     if (v.envio) setShippingMode(v.envio);
 
-    // Extraer datos financieros de extra_data si existen
+    // Extraer datos financieros y transportadora de extra_data si existen
     if (v.extra_data) {
         const ex = typeof v.extra_data === 'string' ? JSON.parse(v.extra_data) : v.extra_data;
+        if (ex.transportadora) {
+            const trEl = document.getElementById('transportadora');
+            if (trEl) trEl.value = ex.transportadora;
+        }
         if (ex.metodoPago) {
             const payEl = document.getElementById('paymentMethod');
             if (payEl) payEl.value = ex.metodoPago;
@@ -1322,6 +1326,7 @@ async function handleVentaSubmit(e) {
             direccion: direccion,
             envio: document.getElementById('envio')?.value || 'Pago',
             guia: document.getElementById('guia')?.value.trim() || '',
+            transportadora: document.getElementById('transportadora')?.value || '',
             metodoPago: document.getElementById('paymentMethod')?.value || 'Nequi',
             descuento: Number(document.getElementById('discountValue')?.value) || 0,
             shippingValue: Number(document.getElementById('shippingValue')?.value) || 0,
@@ -1356,6 +1361,7 @@ async function handleVentaSubmit(e) {
                 direccion: commonData.direccion,
                 envio: commonData.envio,
                 guia: commonData.guia,
+                transportadora: commonData.transportadora,
                 costo: parseFloat(item.cost) || 0,
                 valor: parseFloat(item.price) || 0,
                 foto: finalFoto || 'https://via.placeholder.com/50',
@@ -1365,6 +1371,7 @@ async function handleVentaSubmit(e) {
                     descuento: commonData.descuento,
                     shippingValue: commonData.shippingValue,
                     shippingRealCost: commonData.shippingRealCost,
+                    transportadora: commonData.transportadora,
                     qty: item.qty || 1,
                     categoria: item.type
                 }
@@ -1477,7 +1484,7 @@ function refrescar() {
             <td data-label="Sel."><input type="checkbox" class="proveedor-checkbox" value="${v.id}" data-id="${v.id}" style="width:18px; height:18px; accent-color: var(--primary); cursor:pointer;" onchange="this.closest('tr').classList.toggle('selected', this.checked); const anyChecked = document.querySelectorAll('.proveedor-checkbox:checked').length > 0; const btnEl = document.getElementById('btnEliminarSel'); if(btnEl) btnEl.style.display = anyChecked ? 'inline-flex' : 'none'; const btnG = document.getElementById('btnGenerarGuia'); if(btnG) btnG.style.display = anyChecked ? 'inline-flex' : 'none'; const btnE = document.getElementById('btnEnviarProveedor'); if(btnE) btnE.style.display = (anyChecked && window._isMonosStore) ? 'inline-flex' : 'none';"></td>
             <td data-label="Img"><img src="${v.foto}" class="img-mini" onclick="previewImg(this.src)"></td>
             <td data-label="Prenda"><strong>${v.producto}</strong><br><small>${v.talla} • ${v.fecha ? v.fecha.split('-').reverse().join('/') : ''}</small>${obsAlertHtml}</td>
-            <td data-label="Cliente"><strong>${v.cliente}</strong> <small>(${v.cedula || 'S/N'})</small><br><small>${formatPhoneWhatsApp(v.telefono, v.cliente)} - ${v.email ? `<a href="javascript:void(0)" onclick="openEmailModal('${v.email.replace(/'/g, "\\'")}', '${(v.cliente || '').replace(/'/g, "\\'")}', '${v.id}')" style="color:var(--primary); font-weight:700; text-decoration:underline; cursor:pointer;" title="Enviar correo a cliente"><i data-lucide="mail" style="width:12px; height:12px; display:inline; vertical-align:middle; margin-right:2px;"></i>${v.email}</a>` : '-'}</small><br><small>${v.plataforma || '-'} • ${v.ciudad}, ${v.pais || '-'}</small><br><small style="color:var(--text-muted); font-style:italic; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="map-pin" class="lucide-sm"></i> ${v.direccion || 'Sin dirección'}</small><br><small style="color:var(--primary); font-weight:800; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="package" class="lucide-sm"></i> Envío: ${v.envio || 'Por defecto'}</small>${v.guia ? `<br><button type="button" onclick="abrirModalRastreo('${escapeAttr(v.guia)}', '${escapeAttr(v.cliente || '')}', '${escapeAttr(v.telefono || '')}', '${escapeAttr(v.producto || '')}')" class="guia-tracking-pill" title="Rastrear paquete en 1 clic"><i data-lucide="truck" class="lucide-sm"></i> Guía: <strong>${v.guia}</strong> <span style="font-size:10px; opacity:0.85; margin-left:3px;">(Rastrear ↗)</span></button>` : ''}</td>
+            <td data-label="Cliente"><strong>${v.cliente}</strong> <small>(${v.cedula || 'S/N'})</small><br><small>${formatPhoneWhatsApp(v.telefono, v.cliente)} - ${v.email ? `<a href="javascript:void(0)" onclick="openEmailModal('${v.email.replace(/'/g, "\\'")}', '${(v.cliente || '').replace(/'/g, "\\'")}', '${v.id}')" style="color:var(--primary); font-weight:700; text-decoration:underline; cursor:pointer;" title="Enviar correo a cliente"><i data-lucide="mail" style="width:12px; height:12px; display:inline; vertical-align:middle; margin-right:2px;"></i>${v.email}</a>` : '-'}</small><br><small>${v.plataforma || '-'} • ${v.ciudad}, ${v.pais || '-'}</small><br><small style="color:var(--text-muted); font-style:italic; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="map-pin" class="lucide-sm"></i> ${v.direccion || 'Sin dirección'}</small><br><small style="color:var(--primary); font-weight:800; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="package" class="lucide-sm"></i> Envío: ${v.envio || 'Por defecto'}</small>${v.guia ? `<br><div style="display:inline-flex; align-items:center; gap:4px; margin-top:3px;"><button type="button" onclick="ejecutarRastreo('${escapeAttr(v.guia)}', '${escapeAttr(v.transportadora || (v.extra_data && v.extra_data.transportadora) || '')}', '${escapeAttr(v.cliente || '')}', '${escapeAttr(v.telefono || '')}', '${escapeAttr(v.producto || '')}', '${v.id}')" class="guia-tracking-pill" title="${(v.transportadora || (v.extra_data && v.extra_data.transportadora)) ? 'Rastrear directo en ' + getCarrierName(v.transportadora || v.extra_data.transportadora) : 'Rastrear paquete en 1 clic'}"><i data-lucide="truck" class="lucide-sm"></i> Guía: <strong>${v.guia}</strong> ${(v.transportadora || (v.extra_data && v.extra_data.transportadora)) ? `<span class="guia-carrier-tag">${getCarrierTag(v.transportadora || v.extra_data.transportadora)} ↗</span>` : `<span style="font-size:10px; opacity:0.85; margin-left:3px;">(Rastrear ↗)</span>`}</button><button type="button" onclick="abrirModalRastreo('${escapeAttr(v.guia)}', '${escapeAttr(v.cliente || '')}', '${escapeAttr(v.telefono || '')}', '${escapeAttr(v.producto || '')}', '${escapeAttr(v.transportadora || (v.extra_data && v.extra_data.transportadora) || '')}', '${v.id}'); event.stopPropagation();" class="guia-more-btn" title="Opciones de rastreo y WhatsApp"><i data-lucide="more-horizontal" style="width:13px; height:13px;"></i></button></div>` : ''}</td>
             <td data-label="Utilidad" style="color:var(--success); font-weight:700;">$${(v.valor - v.costo).toLocaleString()}</td>
             <td data-label="Estado">
                 <select class="status-select st-${v.estado}" onchange="cambiarEstado('${v.id}', this.value)">
@@ -2570,24 +2577,81 @@ function initInactivityTimeout(minutes = 30) {
 // ==========================================
 // RASTREO DE GUÍAS DE ENVÍO EN 1 CLIC (COLOMBIA)
 // ==========================================
-let _currentRastreo = { guia: '', cliente: '', telefono: '', producto: '' };
+let _currentRastreo = { guia: '', cliente: '', telefono: '', producto: '', transportadora: '', ventaId: null };
 
-function abrirModalRastreo(guia, cliente, telefono, producto) {
+function getCarrierName(k) {
+    const map = {
+        interrapidisimo: 'Inter Rapidísimo',
+        envia: 'Envía (Colvanes)',
+        servientrega: 'Servientrega',
+        coordinadora: 'Coordinadora',
+        tcc: 'TCC',
+        '17track': '17TRACK (Universal)'
+    };
+    return map[String(k || '').toLowerCase()] || 'Transportadora';
+}
+
+function getCarrierTag(k) {
+    const map = {
+        interrapidisimo: 'Inter',
+        envia: 'Envía',
+        servientrega: 'Servi',
+        coordinadora: 'Coord',
+        tcc: 'TCC',
+        '17track': '17Track'
+    };
+    return map[String(k || '').toLowerCase()] || 'Rastrear';
+}
+
+function ejecutarRastreo(guia, transportadora, cliente, telefono, producto, ventaId) {
+    guia = String(guia || '').trim();
+    if (!guia) {
+        showToast('⚠️ No hay número de guía disponible');
+        return;
+    }
+
+    let carrier = (transportadora || '').trim().toLowerCase();
+    // Auto-detección por formato de guía si aún no está asignada
+    if (!carrier) {
+        if (/^70\d{8,12}$/.test(guia)) {
+            carrier = 'interrapidisimo';
+        }
+    }
+
+    if (carrier) {
+        // Enviar directo a la página de rastreo requerida
+        abrirRastreoWeb(carrier, guia);
+    } else {
+        // Si no se sabe la transportadora, abrir el modal para que elija y rastree
+        abrirModalRastreo(guia, cliente, telefono, producto, carrier, ventaId);
+    }
+}
+
+function abrirModalRastreo(guia, cliente, telefono, producto, transportadora = '', ventaId = null) {
     _currentRastreo = {
         guia: String(guia || '').trim(),
         cliente: String(cliente || '').trim(),
         telefono: String(telefono || '').trim(),
-        producto: String(producto || '').trim()
+        producto: String(producto || '').trim(),
+        transportadora: String(transportadora || '').trim().toLowerCase(),
+        ventaId: ventaId || null
     };
+
+    // Auto-detectar si no tiene transportadora explícita
+    if (!_currentRastreo.transportadora && /^70\d{8,12}$/.test(_currentRastreo.guia)) {
+        _currentRastreo.transportadora = 'interrapidisimo';
+    }
 
     const modal = document.getElementById('modalRastreoGuia');
     const guiaEl = document.getElementById('modalRastreoGuiaNum');
     const cliEl = document.getElementById('modalRastreoCliente');
     const prodEl = document.getElementById('modalRastreoProducto');
+    const selEl = document.getElementById('modalSelectTransportadora');
 
     if (guiaEl) guiaEl.textContent = _currentRastreo.guia || '-';
     if (cliEl) cliEl.textContent = _currentRastreo.cliente || 'Cliente';
     if (prodEl) prodEl.textContent = _currentRastreo.producto || 'Pedido';
+    if (selEl) selEl.value = _currentRastreo.transportadora || '';
 
     if (modal) {
         modal.style.display = 'flex';
@@ -2614,8 +2678,8 @@ function copiarGuiaModal() {
     }
 }
 
-function abrirRastreoWeb(carrier) {
-    const g = (_currentRastreo.guia || '').trim();
+function abrirRastreoWeb(carrier, customGuia) {
+    const g = String(customGuia || _currentRastreo.guia || '').trim();
     if (!g) {
         showToast('⚠️ No hay número de guía disponible');
         return;
@@ -2628,31 +2692,76 @@ function abrirRastreoWeb(carrier) {
 
     let url = '';
     const enc = encodeURIComponent(g);
+    let msg = '';
 
     switch (carrier) {
         case 'interrapidisimo':
-            url = `https://www.interrapidisimo.com/sigue-tu-envio/?guia=${enc}`;
-            break;
-        case 'servientrega':
-            url = `https://www.servientrega.com/wps/portal/rastreo-envio`;
-            break;
-        case 'coordinadora':
-            url = `https://www.coordinadora.com/portafolio-de-servicios/servicios-en-linea/rastrear-guias/?guia=${enc}`;
+            // Portal oficial de seguimiento de Inter Rapidísimo (sin 404)
+            url = 'https://siguetuenvio.interrapidisimo.com/';
+            msg = `📋 Guía ${g} copiada. Se abrió Inter Rapidísimo (pega con Ctrl+V).`;
             break;
         case 'envia':
-            url = `https://envia.co/`;
+            // Portal oficial de Envía Colvanes
+            url = 'https://envia.co/';
+            msg = `📋 Guía ${g} copiada. Se abrió Envía (pega con Ctrl+V en el buscador).`;
+            break;
+        case 'servientrega':
+            // Portal oficial Servientrega
+            url = 'https://www.servientrega.com/wps/portal/rastreo-envio';
+            msg = `📋 Guía ${g} copiada. Se abrió Servientrega.`;
+            break;
+        case 'coordinadora':
+            // Portal oficial Coordinadora
+            url = 'https://coordinadora.com/rastreo/rastreo-de-guia/';
+            msg = `📋 Guía ${g} copiada. Se abrió Coordinadora.`;
             break;
         case 'tcc':
+            // Consulta directa TCC
             url = `https://tcc.com.co/rastreo/?guia=${enc}`;
+            msg = `🚚 Consultando guía ${g} en TCC...`;
+            break;
+        case '17track':
+            // Rastreo directo automático multi-transportadora con la guía cargada
+            url = `https://t.17track.net/es#nums=${enc}`;
+            msg = `⚡ Abriendo rastreo directo automático en 17TRACK para guía ${g}...`;
             break;
         case 'google':
         default:
-            url = `https://www.google.com/search?q=rastreo+guia+${enc}`;
+            const carrierLabel = getCarrierName(carrier);
+            const queryStr = carrierLabel !== 'Transportadora' ? `${carrierLabel} rastreo guia ${g}` : `rastreo guia ${g}`;
+            url = `https://www.google.com/search?q=${encodeURIComponent(queryStr)}`;
+            msg = `🔍 Buscando guía ${g} en Google...`;
             break;
     }
 
-    showToast(`🔍 Abriendo rastreo para guía ${g}...`);
+    showToast(msg);
     window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+async function cambiarTransportadoraModal(nuevaTransp) {
+    _currentRastreo.transportadora = nuevaTransp;
+    if (_currentRastreo.ventaId) {
+        const v = Array.isArray(dbVentas) ? dbVentas.find(x => String(x.id) === String(_currentRastreo.ventaId)) : null;
+        if (v) {
+            v.transportadora = nuevaTransp;
+            if (!v.extra_data) v.extra_data = {};
+            if (typeof v.extra_data === 'string') {
+                try { v.extra_data = JSON.parse(v.extra_data); } catch (e) { v.extra_data = {}; }
+            }
+            v.extra_data.transportadora = nuevaTransp;
+            try {
+                await fetch('/api/ventas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(v)
+                });
+                showToast(`✅ Transportadora guardada: ${getCarrierName(nuevaTransp)}`);
+                refrescar();
+            } catch (err) {
+                console.warn('Error guardando transportadora:', err);
+            }
+        }
+    }
 }
 
 function enviarGuiaWhatsAppModal() {
@@ -2673,13 +2782,13 @@ function enviarGuiaWhatsAppModal() {
 
     const saludo = cli ? `Hola ${cli}! 👋` : `Hola! 👋`;
     const detalleProd = prod ? ` de tu pedido (${prod})` : ` de tu pedido`;
-    const mensaje = `${saludo} Te escribimos de Monos para confirmarte que tu paquete ya va en camino 📦\n\nNúmero de Guía: ${g}\n\nPuedes consultar el estado del envío con la transportadora. ¡Quedamos atentos a cualquier duda!`;
+    const carrierName = _currentRastreo.transportadora ? ` por ${getCarrierName(_currentRastreo.transportadora)}` : '';
+    const mensaje = `${saludo} Te escribimos de Monos para confirmarte que tu paquete ya va en camino${carrierName} 📦\n\nNúmero de Guía: ${g}\n\nPuedes consultar el estado del envío con la transportadora. ¡Quedamos atentos a cualquier duda!`;
 
     if (phoneClean) {
         const waUrl = `https://wa.me/${phoneClean}?text=${encodeURIComponent(mensaje)}`;
         window.open(waUrl, '_blank', 'noopener,noreferrer');
     } else {
-        // Si no hay teléfono registrado, copiar el mensaje para que el usuario lo pegue donde quiera
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(mensaje).then(() => {
                 showToast('💬 Sin teléfono registrado. Mensaje copiado al portapapeles.');
@@ -2689,3 +2798,19 @@ function enviarGuiaWhatsAppModal() {
         }
     }
 }
+
+// Auto-detectar transportadora en el formulario al escribir guía
+document.addEventListener('DOMContentLoaded', () => {
+    const guiaInput = document.getElementById('guia');
+    if (guiaInput) {
+        guiaInput.addEventListener('input', (e) => {
+            const val = (e.target.value || '').trim();
+            const transpEl = document.getElementById('transportadora');
+            if (transpEl && !transpEl.value) {
+                if (/^70\d{8,12}$/.test(val)) {
+                    transpEl.value = 'interrapidisimo';
+                }
+            }
+        });
+    }
+});
